@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/histogram-bellcurve.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+<style>
+    .dtableforstrain{
+        margin-left:2%;
+        margin-right: 100px;
+        height:50px;
+    }
+
+    .text{
+        margin-left: 2%;
+        font-size: 15px;
+    }
+</style>
+
+{% endblock %}
+
+
+
+
+{% block body %}
+<p class="text" style="margin-top: 20px;">Use the table below to search for plates with the substrate/inhibitor of choice along with metadata. The data in the table is obtained from the <a href="https://www.biolog.com/products-portfolio-overview/phenotype-microarrays-for-microbial-cells/">
+Biolog Inc portfolio</a>. Clicking on each row leads to a summary of all samples, across organisms, in the database that have reported growth on the substrate/inhibitors. </p>
+<div class = "dtableforstrain">
+    <table id="table_id" class ="table table-hover">
+        <thead style="background-color: whitesmoke;">        
+            <tr>
+                <th>Plate</th>
+                <th>Well ID</th>
+                <th>Compound</th>
+                <th>Description</th>
+                <th>KEGG ID</th>
+                <th>CAS ID</th>
+            </tr>
+        </thead>
+    </table>
+    
+    </div>
+
+{% endblock %}
+
+{% block script%}
+
+<script>
+        $(document).ready(function() {
+        var table = $('#table_id').DataTable( {
+            "ajax":'/plate_descriptions/json',
+            "lengthChange": true,
+            "deferRender": true,
+            "info": true,
+            "lengthMenu": [[50, 80, -1], [50, 80, "All"]],
+        } );
+    
+
+        // Attach click event listener to each row
+        $('#table_id').on('click', 'tr', function() {
+        // var plateID = table.row(this).data()[0]; // Assuming PlateID is the first column
+        var plate = table.row(this).data()[0];
+        var well = table.row(this).data()[1];
+        var compound = table.row(this).data()[2];
+        var desc = table.row(this).data()[3];
+        var url = `{{ url_for('compound_summary') }}?plate=${plate}&well=${well}&compound=${compound}&desc=${desc}`;
+        window.location.href = url; // Redirect to the constructed URL
+        });
+
+    } );
+</script>
+{%endblock%}
+

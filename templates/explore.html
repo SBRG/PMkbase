@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
+
+{% endblock %}
+
+{% block body %}
+
+
+<h6 style="margin-left: 370px; margin-top: 80px;">Select a phenotype to screen for and strains from the table for a comparative phenotypic analysis</h6>
+
+
+<div class="container" style="margin-top: 30px;">
+
+    <form method="POST" action="/explore">
+        <div class="form-group" style="margin-bottom: 50px ;">
+            <label for="dropdown">Select a substrate/inhibitor:</label>
+            <select class="form-control select2" id="dropdown" name="option">
+                {% for option in options %}
+                <option value="{{ option }}">{{ option }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <!-- <div class="form-group">
+            <label for="message">Message:</label>
+            <textarea class="form-control" id="message" name="message" rows="5"></textarea>
+        </div> -->
+        <!-- <button type="submit" class="btn btn-primary">Submit</button> -->
+    </form>
+
+    <form method="POST" action="/explore" id="contactForm">
+        <table class="table" id="entriesTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Strain</th>
+                    <th>Modification</th>
+                    <th>Specie</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in entries %}
+                <tr>
+                    <td><input type="checkbox"  class="checkbox" id="{{ entry['Strain ID'] }}+{{ entry['Modification'] }}" name="entry" value="1" data-id="{{ entry['Strain ID'] }}" data-name="{{ entry['Modification'] }}" data-specie="{{ entry['Specie'] }}"></td>
+                    <td>{{ entry['Strain ID'] }}</td>
+                    <td>{{ entry['Modification'] }}</td>
+                    <td>{{ entry['Specie'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <input type="hidden" id="selectedEntries" name="selected_entries">
+        <input type="hidden" id="selectedOption" name="selected_option">
+        <button type="submit" class="btn btn-primary" onclick="prepareData()">Submit</button>
+    </form>
+</div>
+
+
+{% endblock %}
+
+
+{% block script%}
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#entriesTable').DataTable();
+    });
+</script>
+
+<script>
+    function prepareData() {
+
+        var form = document.getElementById("contactForm");
+        // var checkboxes = document.querySelectorAll(".checkbox:checked");
+        var table = $('#entriesTable').DataTable();
+        var checkboxes = [];
+
+        table.$('input[type="checkbox"]:checked').each(function() {
+            checkboxes.push(this);
+        });
+
+
+        checkboxes.forEach(function(checkbox) {
+                var entryId = checkbox.getAttribute('data-id');
+                var entryName = checkbox.getAttribute('data-name');
+                var entryspecie = checkbox.getAttribute('data-specie');
+
+                var input = document.createElement('input');
+                input.setAttribute('type', 'hidden');
+                input.setAttribute('name', 'selected_entries[]');
+                input.setAttribute('value', entryId);
+
+                var input2 = document.createElement('input');
+                input2.setAttribute('type', 'hidden');
+                input2.setAttribute('name', 'selected_entries[]');
+                input2.setAttribute('value', entryName);
+
+                var input3 = document.createElement('input');
+                input3.setAttribute('type', 'hidden');
+                input3.setAttribute('name', 'selected_entries[]');
+                input3.setAttribute('value', entryspecie);
+
+                form.appendChild(input);
+                form.appendChild(input2);
+                form.appendChild(input3);
+            })
+            var selectedOption = $("#dropdown").val();
+            $("#selectedOption").val(selectedOption);
+        }
+
+
+</script>
+
+
+<script>
+    $(document).ready(function() {
+            $('.select2').select2();
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,413 @@
+{% extends 'uploaded_data_base.html' %}
+
+{% block head %}
+
+<style>
+
+.dtableforstrain{
+        margin-left:250px;
+    }
+.dtprojectforstrain{
+        margin-left:1000px;
+        margin-right: 100px;
+        height:50px;
+        margin-top: 200px;
+        width: 100px;
+        
+    }
+
+.dtprojectforgrowth{
+        margin-left:1000px;
+        height:50px;
+        margin-top: 200px;
+        width: 100px;
+    }
+
+
+#project_id.dataTable tbody tr:hover {
+    background-color: lightgrey;
+    }
+
+#table_id.dataTable tbody tr:hover {
+    background-color: lightgrey;
+    }
+
+#container_linechart {
+    height: 300px;
+    margin-left: 25%;
+    margin-top: 50px;
+    width: 1000px;
+}
+
+/* Style for the scrollable dropdown */
+.dropdown-menu-scrollable {
+    max-height: 150px;  /* Adjust height as needed */
+    overflow-y: auto;
+}
+
+/* Ensure table is responsive */
+#table_container {
+    width: 80%; /* Adjusted for better alignment */
+    margin-left: 15%; /* Center the table */
+    overflow-x: auto; /* Enable horizontal scrolling */
+}
+
+/* Adjusted margin and width for better alignment and responsiveness */
+#container {
+    margin-left: 15%; /* Change to percentage for responsiveness */
+    width: 80%; /* Adjusted for better alignment */
+    margin-top: 20px; /* Adjusted for better alignment */
+    margin-bottom: 20px; /* Adjusted for better alignment */
+}
+
+
+.highcharts-figure,
+.highcharts-data-table table {
+    min-width: 360px;
+    max-width: 800px;
+    margin: 1em auto;
+}
+
+.highcharts-data-table table {
+    font-family: Verdana, sans-serif;
+    border-collapse: collapse;
+    border: 1px solid #ebebeb;
+    margin: 10px auto;
+    text-align: center;
+    width: 100%;
+    max-width: 500px;
+}
+
+.highcharts-data-table caption {
+    padding: 1em 0;
+    font-size: 1.2em;
+    color: #555;
+}
+
+.highcharts-data-table th {
+    font-weight: 600;
+    padding: 0.5em;
+}
+
+.highcharts-data-table td,
+.highcharts-data-table th,
+.highcharts-data-table caption {
+    padding: 0.5em;
+}
+
+.highcharts-data-table thead tr,
+.highcharts-data-table tr:nth-child(even) {
+    background: #f8f8f8;
+}
+
+.highcharts-data-table tr:hover {
+    background: #f1f7ff;
+}
+
+.highcharts-credits {
+display: none !important;
+}
+
+
+/* Hide the contextButton (export menu button) */
+.highcharts-contextbutton {
+  display: none;
+}
+
+/* Hide the exportButton (export to PNG/SVG/CSV/XLS button) */
+.highcharts-exporting-group {
+  display: none;
+}
+
+/* Hide the printButton (print chart button) */
+.highcharts-button-symbol.highcharts-print-button {
+  display: none;
+}
+
+
+.light-pink {
+    background-color: #FFD1DC;
+}
+
+.light-blue {
+    background-color: #C0C0FF;
+}
+
+
+</style>
+
+{% endblock %}
+
+
+
+
+{% block body %}
+<br>
+
+
+<div id="table_container">
+    <table id="table_id_growth" class ="table table-hover" >
+        <thead style="background-color: rgb(255, 255, 255)">        
+            <tr>
+                <th>Well</th>
+                <th>Compound</th>
+                <th>Growth</th>
+                <th>Description</th>
+                <th>KEGG ID</th>
+                <th>CAS ID</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<br>
+<br>
+<br>
+
+<div class="dropdown" style="margin-left: 15%;">
+    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="background-color: #fffcfc;color: black;">
+      Max Resp
+    </button>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+      <a class="dropdown-param-item dropdown-item" data-param="Max Resp">Max Resp</a>
+      <a class="dropdown-param-item dropdown-item" data-param="Max Resp Rate">Max Resp Rate</a>
+      <a class="dropdown-param-item dropdown-item" data-param="Time till max resp rate">Time till max resp</a>
+      <a class="dropdown-param-item dropdown-item" data-param="AUC">AUC</a>
+    </div>
+</div>
+
+
+<div id="container"></div>
+
+<div class="dropdown2" style="margin-left: 15%;">
+    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownCompoundsButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="background-color: #fffcfc;color: black;">
+        Select Compound
+    </button>
+    <div class="dropdown-menu dropdown-menu-scrollable" aria-labelledby="dropdownCompoundsButton">
+        {% for compound in dropdown_compounds %}
+            <a class="dropdown-compound-item dropdown-item" data-compound="{{ compound }}">{{ compound }}</a>
+        {% endfor %}
+    </div>
+</div>
+
+<div id="container_linechart"></div>
+
+{% endblock %}
+
+{% block script%}
+
+<script>
+var categories = {{ categories|safe}}
+var mean_data = {{ mean_data|safe}}
+var param_name = "{{param_name|safe}}";
+
+
+
+$(document).ready(function() {
+    var table_growth = $('#table_id_growth').DataTable({
+        // "select": true,
+        "paging": false,
+        //"ajax": '/strains/json',
+        "ajax": '/uploaded_strain_growth/json?plateids={{ plateids }}',
+        "scrollCollapse": true,
+        "scrollY": '250px',
+        "info": false,
+        "createdRow": function(row, data, dataIndex) {
+            // console.log("Processing row:", dataIndex, data); // Log the data to see if the "Growth" column contains the expected values
+            if (data[2] == "Yes") {
+                row.style.backgroundColor = "#FFD1DC";
+                
+            } else if (data[2] == "Uncertain") {
+                row.style.backgroundColor = "#C0C0FF";
+            } 
+            
+        }
+    });
+});
+
+
+
+function updateChart(param) {
+        $.ajax({
+            url: '/update_kinetic_chart_uploaded_data',  // Add a route for updating chart data in your Flask app
+            type: 'GET',
+            data: {
+                plateids: '{{ plateids }}',
+                param: param
+            },
+            success: function(response) {
+                categories = response.categories;
+                mean_data = response.mean_data;
+                param_name = param;
+                // Redraw the chart with new data
+                Highcharts.charts[0].update({
+                    xAxis: {
+                        categories: categories
+                    },
+                    yAxis:{
+                        title: {
+                    text: param_name,
+                }
+                    },
+                    series: [{
+                        data: mean_data
+                    },]
+                });
+            }
+        });
+    }
+
+    // Event listener for the parameter dropdown items
+    $('.dropdown-param-item').click(function() {
+        var param = $(this).data('param');
+        $('#dropdownMenuButton').text(param);
+        updateChart(param);
+    });
+
+
+
+    Highcharts.chart('container', {
+        chart: {
+            zoomType: 'x'
+        },
+        title: {
+            text: 'Kinetic Parameters'
+        },
+        xAxis: {
+            categories: categories,
+            pointRange: 20
+        },
+
+        scrollbar: {
+                    enabled: true,
+                    margin: 50,
+                    showFull: false
+                },
+
+        yAxis: [
+            {
+                // Primary yAxis
+                title: {
+                    text: param_name,
+                },
+            },
+        ],
+
+        tooltip: {
+            shared: true
+        },
+
+        plotOptions: {
+            series: {
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: false
+                        }
+                    }
+                }
+            }
+        },
+
+        series: [{
+                name: '',
+                type: 'column',
+                color:'rgba(0,0,0,0)',
+                data: mean_data,
+                tooltip: {
+            pointFormat: '<span style="font-weight: bold; color: {series.color}">{series.name}</span>: {point.y}'
+        },
+            },
+    ],});
+
+</script>
+
+<script>
+    var growth_data = {{ growth_data|safe}}
+    var time_series = {{ time_series|safe}}
+
+
+    function updategrowthchart(compound) {
+            $.ajax({
+                url: '/update_uploaded_sample_growth_curve',  // Add a route for updating chart data in your Flask app
+                type: 'GET',
+                data: {
+                plateids:'{{ plateids }}',
+                compound: compound
+             },
+                success: function(response) {
+                    new_growth_data = response.growth_data;
+                    var chart = Highcharts.charts[1];
+                    // Merge new series data into existing chart
+                    new_growth_data.forEach(function(series) {
+                        chart.addSeries(series, false); // Add series without redrawing
+                    });
+
+                    chart.redraw();
+                    
+                }
+            });
+        }
+
+
+    // Event listener for the compound dropdown items (does not update chart)
+    $('.dropdown-compound-item').click(function() {
+    var compound = $(this).data('compound');
+    $('#dropdownCompoundsButton').text(compound);
+    updategrowthchart(compound);
+    });
+
+    Highcharts.chart('container_linechart', {
+    
+    title: {
+        text: 'Measured signal(s)',
+        align:'center'
+    },
+    
+    yAxis: {
+        title: {
+            text: 'Signal'
+        }
+    },
+    
+    xAxis:{categories:time_series,title:{text:'Time (hrs)'}},
+    
+    chart: {
+        marginBottom: 150 // Increase this value if more space is needed for the legend
+    },
+    legend: {
+        layout: 'horizontal',
+        align: 'center',
+        verticalAlign: 'bottom'
+    },
+    
+    plotOptions: {
+        series: {
+            label: {
+                connectorAllowed: false
+            },
+        }
+    },
+    
+    series: growth_data,
+    
+    responsive: {
+        rules: [{
+            condition: {
+                maxWidth: 500
+            },
+            chartOptions: {
+                legend: {
+                    layout: 'horizontal',
+                    align: 'center',
+                    verticalAlign: 'bottom'
+                }
+            }
+        }]
+    }
+    
+    });
+
+</script>
+{%endblock%}

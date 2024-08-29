@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/histogram-bellcurve.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+
+
+
+    <style>
+
+    .dtableforstrain{
+            margin-left:1.5%;
+            height:5px;
+            margin-top: 20px;
+            width: 60%;
+
+        }
+
+    
+    .dtablefornogrowthstrain{
+            margin-left:1.5%;
+            height:5px;
+            margin-top: 20px;
+            width: 60%;
+
+        }
+
+    .flex-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-left: 2%;
+        }
+
+    .table-container {
+            width: 90%;
+        }
+
+    .chart-container {
+            width: 10%;
+        }
+
+
+    .highcharts-figure,
+    .highcharts-data-table table {
+        margin-left: -300%;
+        width: 270%;
+        /* margin: 1em auto; */
+    }
+
+    /* #container,#container2 {
+        width: 50%;
+        /* margin-top: 20%; */
+        /* margin-bottom:-60% */
+
+
+
+    /* #container2 {
+        width: 100%;
+        margin-top: 20%;
+    } */
+
+    .highcharts-data-table table {
+        font-family: Verdana, sans-serif;
+        border-collapse: collapse;
+        border: 1px solid #ebebeb;
+        margin: 10px auto;
+        text-align: center;
+        width: 100%;
+        max-width: 500px;
+    }
+
+    .highcharts-data-table caption {
+        padding: 1em 0;
+        font-size: 1.2em;
+        color: #555;
+    }
+
+    .highcharts-data-table th {
+        font-weight: 600;
+        padding: 0.5em;
+    }
+
+    .highcharts-data-table td,
+    .highcharts-data-table th,
+    .highcharts-data-table caption {
+        padding: 0.5em;
+    }
+
+    .highcharts-data-table thead tr,
+    .highcharts-data-table tr:nth-child(even) {
+        background: #f8f8f8;
+    }
+
+    .highcharts-data-table tr:hover {
+        background: #f1f7ff;
+    }
+
+    </style>
+</head>
+<body>
+
+
+    <nav class="navbar navbar-expand-sm navbar-light" style="background-color: white;">
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+          <a class="nav-link" id="a-dashboard" href="{{url_for('index')}}" onclick="dodajAktywne(this)">Dashboard<span class="sr-only">(current)</span></a>
+          <a class="nav-link" href="{{url_for('about')}}">About <span class="sr-only">(current)</span></a>
+          <a class="nav-link" href="{{url_for('plates')}}">Plates <span class="sr-only">(current)</span></a>
+          <ul class="navbar-nav" style="margin-left: auto;font-family: monospace;">
+            <li class="nav-item active">
+              <!-- <a class="nav-link" href="#">About <span class="sr-only">(current)</span></a> -->
+            </li>
+            <li class="nav-item">
+              <!-- <a class="nav-link" href="#">Contact</a> -->
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+    <h4 style="margin-left:1.5%"><u>{{plate+', '+well+': '+compound+': '+desc}}</u></h1>
+    <br>
+    <h5 style="margin-left:1.5%">Growing samples</h5>
+    <!-- <h4 style="margin-left:1.5%"><u>{{compound+': '+desc}}</u></h1> -->
+
+
+    <div class="flex-container">
+        <div class="table-container">
+    <div class = "dtableforstrain">
+        <table id="table_id" class ="table table-hover">
+            <thead  style="background-color: whitesmoke;">
+                <tr>
+                    <th>Strain</th>
+                    <th>Metadata/Modifications</th>
+                    <th>Specie</th>
+                    <th>Media</th>
+                    <th>Project</th>
+                    <th>Phylogroup/Genome Cluster</th>
+                    <th>MLST</th>
+                    <!-- <th>Phylogroup/Genome Cluster</th>
+                    <th>MLST</th>
+                    <th>Project</th> -->
+                </tr>
+            </thead>
+        </table>
+        
+    </div>
+    </div>
+
+
+    <div class="chart-container">
+    <figure class="highcharts-figure">
+        <div id="container"></div>
+    </figure>
+    </div>
+    </div>
+
+
+    <h5 style="margin-left:1.5%;">Non Growing samples</h5>
+
+    <div class="flex-container">
+        <div class="table-container">
+    <div class = "dtablefornogrowthstrain">
+        <table id="table_id_ng" class ="table table-hover">
+            <thead  style="background-color: whitesmoke;">
+                <tr>
+                    <th>Strain</th>
+                    <th>Metadata/Modifications</th>
+                    <th>Specie</th>
+                    <th>Media</th>
+                    <th>Project</th>
+                    <th>Phylogroup/Genome Cluster</th>
+                    <th>MLST</th>
+                    <!-- <th>Phylogroup/Genome Cluster</th>
+                    <th>MLST</th>
+                    <th>Project</th> -->
+                </tr>
+            </thead>
+        </table>
+        
+    </div>
+    </div>
+    <div class="chart-container">
+    <figure class="highcharts-figure">
+        <div id="container2"></div>
+    </figure>
+    </div>
+    </div>
+
+
+
+
+<script>
+    $(document).ready(function() {
+        var specieColors = {};
+        var colors = ['#e6f3ef', '#9bbff4', '#bbdaa4', '#FFD1DC', '#D1FFD6', '#D1D1FF', '#FFDFC1', '#C1FFDD'];
+        var colorIndex = 0;
+
+        var getColor = function(specie) {
+            if (!specieColors[specie]) {
+                specieColors[specie] = colors[colorIndex % colors.length];
+                colorIndex++;
+            }
+            return specieColors[specie];
+        };
+
+        var table1 = $('#table_id').DataTable({
+            "ajax": {
+            "url": '/compound_summary_growth/json?plate={{ plate }}&well={{ well }}',
+            "dataSrc": function(json) {
+                // Extract the additional lists from the response
+                var species_percentage_list = json.species_percentage_list;
+                var unique_species_list = json.unique_species_list;
+
+                var chartData = species_percentage_list.map(function(percentage, index) {
+                            return {
+                                y: percentage,
+                                color: getColor(unique_species_list[index])
+                            };
+                        });
+
+                // Do something with the additional data (e.g., store them in global variables or use them directly)
+                //console.log(species_percentage_list, unique_species_list);
+                    Highcharts.charts[0].update({
+                            xAxis: {
+                                categories: unique_species_list,
+                                title: {
+                                    text: null
+                                },
+                                gridLineWidth: 1,
+                                lineWidth: 0
+                            },
+
+                            series: [{
+                                name:'% Growing samples',
+                                data: chartData,
+                                marker: {
+                                    enabled: false
+                                },
+                                legend: {
+                                    symbol: 'none'
+                                }
+                            }]
+                });
+
+                // Return the table data to DataTables
+                return json.data;
+                }
+            },
+            "lengthChange": true,
+            "deferRender": true,
+            "info": true,
+            "lengthMenu": [[8, 50, -1], [8, 50, "All"]],
+            "createdRow": function(row, data, dataIndex) {
+                var specie = data[2];
+                if (specie) {
+                    $(row).css('background-color', getColor(specie));
+                }
+            }
+        });
+
+        var table2 = $('#table_id_ng').DataTable({
+            "ajax": {
+            "url": '/compound_summary_nogrowth/json?plate={{ plate }}&well={{ well }}',
+            "dataSrc": function(json) {
+                // Extract the additional lists from the response
+                var species_percentage_list = json.species_percentage_list;
+                var unique_species_list = json.unique_species_list;
+                var chartData = species_percentage_list.map(function(percentage, index) {
+                            return {
+                                y: percentage,
+                                color: getColor(unique_species_list[index])
+                            };
+                        });
+
+                // Do something with the additional data (e.g., store them in global variables or use them directly)
+                //console.log(species_percentage_list, unique_species_list);
+                console.log(species_percentage_list, unique_species_list)
+                    Highcharts.charts[1].update({
+                            xAxis: {
+                                categories: unique_species_list,
+                                title: {
+                                    text: null
+                                },
+                                gridLineWidth: 1,
+                                lineWidth: 0
+                            },
+
+                            series: [{
+                                name:'% Non-Growing samples',
+                                data: chartData,
+                                marker: {
+                                    enabled: false
+                                },
+                                legend: {
+                                    symbol: 'none'
+                                }
+                            }]
+                });
+
+                // Return the table data to DataTables
+                return json.data;
+                }
+            },
+            "lengthChange": true,
+            "deferRender": true,
+            "info": true,
+            "lengthMenu": [[8, 50, -1], [8, 50, "All"]],
+            "createdRow": function(row, data, dataIndex) {
+                var specie = data[2];
+                if (specie) {
+                    $(row).css('background-color', getColor(specie));
+                }
+            }
+        });
+    });  
+ 
+</script>
+
+<script>
+    Highcharts.chart('container', {
+    chart: {
+        type: 'bar'
+    },
+    title: {
+        text: '% Samples with growth',
+        align: 'left'
+    },
+    xAxis: {
+        categories: [],
+        title: {
+            text: null
+        },
+        
+    },
+    yAxis: {
+        min: 0,
+        max: 100,
+        title: {
+            text: '% Growing Samples',
+            align: 'high'
+        },
+        labels: {
+            overflow: 'justify'
+        },
+        gridLineWidth: 0
+    },
+    tooltip: {
+        valueSuffix: ' %'
+    },
+    plotOptions: {
+        bar: {
+            dataLabels: {
+                enabled: false
+            },
+            groupPadding: 0.1
+        },
+
+        series: {
+            marker: {
+                enabled: false
+            }
+        },
+
+        legend: {
+                symbolHeight: 0, // Customize the legend symbol height
+                symbolWidth: 0// Customize the legend symbol width
+            }
+    },
+    legend: {
+        enabled:false,
+        // layout: 'vertical',
+        // align: 'right',
+        // verticalAlign: 'top',
+        // x: -40,
+        // y: 80,
+        // floating: true,
+        // borderWidth: 1,
+        // backgroundColor:
+        //     '#FFFFFF' || '#FFFFFF',
+        // shadow: true
+    },
+    credits: {
+        enabled: false
+    },
+    series: [{
+        name: '',
+        data: []
+    }]
+});
+
+
+
+
+Highcharts.chart('container2', {
+    chart: {
+        type: 'bar'
+    },
+    title: {
+        text: '% Non growing samples',
+        align: 'left'
+    },
+
+    xAxis: {
+        categories: [],
+        title: {
+            text: null
+        },
+        gridLineWidth: 1,
+        lineWidth: 0
+    },
+    yAxis: {
+        min: 0,
+        max: 100,
+        title: {
+            text: '% Non Growing Samples',
+            align: 'high'
+        },
+        labels: {
+            overflow: 'justify'
+        },
+        gridLineWidth: 0
+    },
+    tooltip: {
+        valueSuffix: ' %'
+    },
+    plotOptions: {
+        bar: {
+            groupPadding: 0.1
+        }
+    },
+    legend: {
+        enabled:false
+    },
+    credits: {
+        enabled: false
+    },
+    series: [{
+        name: '',
+        data: []
+    }]
+});
+
+</script>
+
+</html>

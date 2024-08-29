@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    
+    {%block head%}{% endblock%}
+</head>
+
+<style>
+.sidebar {
+  margin:0;
+  padding: 0;
+  width: 230px;
+  background-color: whitesmoke;
+  color:black;
+  height: 100%; 
+  position:fixed;
+  overflow: auto;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#strainmetadata{
+    font-size: 20px;
+    font-style: normal;
+    font-family: Arial, Helvetica, sans-serif;
+    pointer-events: none;
+    font-weight: bold;
+}
+
+#strainmetadatafillers{
+    font-size: 20px;
+    font-style: normal;
+    font-family: Arial, Helvetica, sans-serif;
+    pointer-events: none;
+}
+
+/* Sidebar links */
+.sidebar a {
+  display: block;
+  color: black;
+  /* padding: 16px; */
+  padding-top: 10px;
+  text-decoration: none;
+}
+
+/* Active/current link */
+.sidebar a.active {
+  background-color: black;
+  color: whitesmoke;
+}
+
+/* Links on mouse-over */
+.sidebar a:hover:not(.active) {
+  background-color: black;
+  color: white;
+}
+
+/* Dropdown styles */
+.navbar-nav .nav-item .dropdown-menu {
+  display: none;
+  position: left;
+  background-color: white;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.navbar-nav .nav-item:hover .dropdown-menu {
+  display: block;
+}
+
+.navbar-nav .nav-item .dropdown-menu a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.navbar-nav .nav-item .dropdown-menu a:hover {
+  background-color: #ddd;
+}
+
+
+</style>
+<script>
+    console.log('{{specie}}')
+</script>
+<body>
+    <div class="sidebar">
+      <!-- <a id="a-dashboard" href="{{url_for('index')}}" onclick="dodajAktywne(this)"><ul>Dashboard</ul></a> -->
+        <!-- <a id="a-dashboard" href="{{url_for('index')}}" onclick="dodajAktywne(this)"><ul>Dashboard</ul></a> -->
+        <a id="strainmetadata"><ul></ul></a>
+        <a id="strainmetadata"><ul></ul></a>
+        <a id="strainmetadata"><ul>Specie:</ul></a>
+        <a id="strainmetadatafillers"><ul>{{specie_name}}</ul></a>
+        <a id="strainmetadata"><ul>Samples:</ul></a>
+        <a id="strainmetadatafillers"><ul>{{samples}}</ul></a>
+        <!-- <a id="strainmetadatafillers"><ul>{{strid}}</ul></a> -->
+        <a id="strainmetadata"><ul>Strains:</ul></a>
+        <a id="strainmetadatafillers"><ul>{{strains}}</ul></a>
+        <!-- <a id="strainmetadatafillers"><ul>{{strain}}</ul></a> -->
+        <a id="strainmetadata"><ul>Available Plates:</ul></a>
+        <a id="strainmetadatafillers"><ul>{{available_plates}}</ul></a>
+        <a id="strainmetadata"><ul>Genome Clusters:</ul></a>
+        <a id="strainmetadatafillers"><ul>{{clusters}}</ul></a>
+        <!-- <a id="strainmetadatafillers"><ul>{{metadata}}</ul></a> -->
+
+
+   
+    
+      </div>    
+
+      <nav class="navbar navbar-expand-sm navbar-light" style="background-color: white;margin-left: 230px;">
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+          <a class="nav-link" id="a-dashboard" href="{{url_for('index')}}" onclick="dodajAktywne(this)">Dashboard<span class="sr-only">(current)</span></a>
+          <a class="nav-link" href="{{url_for('about')}}">About <span class="sr-only">(current)</span></a>
+          <a class="nav-link" href="{{url_for('plates')}}">Plates <span class="sr-only">(current)</span></a>
+          <a class="nav-link" href="{{url_for('tree',specie=specie)}}">Viz Traits on MashTree<span class="sr-only">(current)</span></a>
+          
+          <ul class="navbar-nav">
+            <li class="nav-item active">
+            </li>
+            <li class="nav-item">
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" style="color:#007bff;" id="navbarDropdown" role="button">Download</a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="{{ url_for('download_all_specie_sequences',specie=specie) }}">All {{specie[0].upper()+'. '+specie[1:]+' '}}Sequences</a>
+                <a class="dropdown-item" href="{{ url_for('download_all_specie_pmdata',specie=specie) }}">All {{specie[0].upper()+'. '+specie[1:]+' '}}Phenotype Microarray data</a>
+          </ul>
+        </div>
+      </nav>
+
+      {% block body %}{% endblock %}
+</body>
+
+
+
+  {% block script%}{%endblock%}
+</html>

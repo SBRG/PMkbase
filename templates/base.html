@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+
+    
+    {%block head%}{% endblock%}
+</head>
+
+<style>
+.sidebar {
+  margin: 0;
+  padding: 0;
+  width: 200px;
+  background-color: rgb(142, 35, 35);
+  color:white;
+  position: fixed;
+  height: 100%;
+  overflow: auto;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#organisms-header{
+    font-size: 25px;
+    font-style: normal;
+    font-family: arial;
+    pointer-events: none;
+    color:white;
+}
+
+
+.jumbotron{
+  margin-left: 200px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+
+
+#date-image{
+  width: 600px;
+  margin-left: 200px;
+}
+
+
+/* Sidebar links */
+.sidebar a {
+  display: block;
+  color:white;
+  padding: 16px;
+  text-decoration: none;
+}
+/* Active/current link */
+.sidebar a.active {
+  background-color: black;
+  color: whitesmoke;
+}
+
+/* Links on mouse-over */
+.sidebar a:hover:not(.active) {
+  background-color: black;
+  color: white;
+}
+
+
+</style>
+<body>
+    <!-- <div class="sidebar"> -->
+      <!-- <a id="a-dashboard" href="{{url_for('index')}}" onclick="dodajAktywne(this)"><ul>Dashboard</ul></a> -->
+        <!-- <a id = "organisms-header"> Organisms</a> -->
+        <!-- <a id="a-dashboard" href="{{url_for('index')}}" onclick="dodajAktywne(this)"><ul>Dashboard</ul></a> -->
+        <!-- <a id="a-ecoli"  href="{{url_for('species',specie='ecoli')}}" onclick="dodajAktywne(this)"><ul>E. coli</ul></a>
+        <a id="a-aureus" href="{{url_for('species',specie='saureus')}}" onclick="dodajAktywne(this)"><ul>S. aureus</ul></a>
+        <a id="a-putida"  href="{{url_for('species',specie='pputida')}}" onclick="dodajAktywne(this)"><ul>P. putida</ul></a>
+    
+      </div>     -->
+
+      <nav class="navbar navbar-expand-sm navbar-light" style="background-color: white;">
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+          <a class="nav-link" id="a-dashboard" href="{{url_for('index')}}" onclick="dodajAktywne(this)">Dashboard<span class="sr-only">(current)</span></a>
+          <a class="nav-link" href="{{url_for('about')}}">About <span class="sr-only">(current)</span></a>
+          <a class="nav-link" href="{{url_for('plates')}}">Plates <span class="sr-only">(current)</span></a>
+          <!-- <a class="nav-link" href="{{url_for('explore')}}">Explore <span class="sr-only">(current)</span></a> -->
+          <!-- <a class="nav-link" href="{{url_for('ticket')}}">Raise a ticket <span class="sr-only">(current)</span></a> -->
+          <!-- <a class="nav-link" href="{{url_for('tree')}}">Viz PhyloTree<span class="sr-only">(current)</span></a> -->
+          <ul class="navbar-nav" style="margin-left: auto;font-family: monospace;">
+            <li class="nav-item active">
+              <!-- <a class="nav-link" href="#">About <span class="sr-only">(current)</span></a> -->
+            </li>
+            <li class="nav-item">
+              <!-- <a class="nav-link" href="#">Contact</a> -->
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      {% block body %}{% endblock %}
+</body>
+
+
+<script>
+    // function dodajAktywne(elem) {
+    //     // get all 'a' elements
+    //     var a = document.getElementsByTagName('a');
+    //     // loop through all 'a' elements
+    //     for (i = 0; i < a.length; i++) {
+    //         // Remove the class 'active' if it exists
+    //         a[i].classList.remove('active')
+    //     }
+    //     // add 'active' classs to the element that was clicked
+    //     elem.classList.add('active');
+
+    //     // Create event listener for all link clicks
+    //     document.querySelectorAll('a').forEach(link => {
+    //       link.addEventListener('click', (e) => {
+    //         console.log(elem.href);
+    //       });
+    //     });
+    // }
+
+
+    function dodajAktywne(elem) {
+            // get all 'a' elements
+            var a = document.getElementsByTagName('a');
+            // loop through all 'a' elements
+            for (i = 0; i < a.length; i++) {
+                // Remove the class 'active' if it exists
+                a[i].classList.remove('active')
+            }
+            // add 'active' classs to the element that was clicked
+            elem.classList.add('active');
+        }
+
+  </script>
+
+  {% block script%}{%endblock%}
+</html>

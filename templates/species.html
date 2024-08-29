@@ -1,0 +1,504 @@
+{% extends 'speciebase.html' %}
+
+{% block head %}
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/histogram-bellcurve.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<script src="https://d3js.org/d3.v6.min.js"></script>
+
+
+
+<style>
+    .dtableforstrain{
+        margin-left:18%;
+        margin-right: 20%;
+        height:50px;
+        margin-top: 20px;
+        width: 75%;
+
+    }
+    .dtprojectforstrain{
+        margin-left:18%;
+        margin-right: 20%;
+        height:50px;
+        width: 75%;
+        margin-top: 38%;
+    }
+
+    #project_id.dataTable tbody tr:hover {
+    background-color: white;
+    }
+
+    #table_id.dataTable tbody tr:hover {
+    background-color: lightgrey;
+    }
+
+
+    .highcharts-figure,
+    .highcharts-data-table table {
+        min-width: 310px;
+        max-width: 800px;
+        margin: 1em auto;
+    }
+
+    .highcharts-data-table table {
+        font-family: Verdana, sans-serif;
+        border-collapse: collapse;
+        border: 1px solid #ebebeb;
+        margin: 10px auto;
+        text-align: center;
+        width: 100%;
+        max-width: 500px;
+    }
+
+    .highcharts-data-table caption {
+        padding: 1em 0;
+        font-size: 1.2em;
+        color: #555;
+    }
+
+    .highcharts-data-table th {
+        font-weight: 600;
+        padding: 0.5em;
+    }
+
+    .highcharts-data-table td,
+    .highcharts-data-table th,
+    .highcharts-data-table caption {
+        padding: 0.5em;
+    }
+
+    .highcharts-data-table thead tr,
+    .highcharts-data-table tr:nth-child(even) {
+        background: #f8f8f8;
+    }
+
+    .highcharts-data-table tr:hover {
+        background: #f1f7ff;
+    }
+
+    .highcharts-credits {
+display: none !important;
+}
+
+/* Hide the contextButton (export menu button) */
+.highcharts-contextbutton {
+  display: none;
+}
+
+/* Hide the exportButton (export to PNG/SVG/CSV/XLS button) */
+.highcharts-exporting-group {
+  display: none;
+}
+
+/* Hide the printButton (print chart button) */
+.highcharts-button-symbol.highcharts-print-button {
+  display: none;
+}
+
+.node circle {
+            /* fill: #fff; */
+            /* stroke: steelblue; */
+            stroke-width: 0px;
+            size: 1cm;
+        }
+
+        .node text {
+            font: 12px sans-serif;
+            text-anchor: middle;
+            font-weight: bold;
+        }
+
+        .link {
+            fill: none;
+            stroke: #ccc;
+            stroke-width: 1.5px;
+        }
+
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            width: 150px;
+            height: 28px;
+            padding: 2px;
+            font: 12px sans-serif;
+            background: lightsteelblue;
+            border: 0px;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+</style>
+{% endblock %}
+
+
+
+
+{% block body %}
+
+<!-- <figure class="highcharts-figure">
+    <div id="container"></div>
+    <p class="highcharts-description" style="text-align: center;">
+        Growth and no growth phenotypes' max respiration recorded. The histogram represents the distribution of max respiration recorded in all substrates/inhibitors with growth and no growth.
+        The points represent the raw values of the max respiration recorded on the basis of which the histogram is generated.
+    </p>
+</figure> -->
+
+
+<!-- <br>
+<br>
+<br> -->
+<!-- <div id="tree-container" style="margin-left: 38%"></div> -->
+
+<div id="tree-container" style="margin-left: 36%"></div>
+<div id="legend-container" style="margin-left: 26%;"></div>
+<p style="margin-left: 36%;font-style: italic;font-weight: 300;">Mash based tree of all strains with PM Data. Legend indicates genomic cluster/phylogroup</p>
+
+
+<div class = "dtableforstrain">
+<table id="table_id" class ="table table-hover">
+    <thead  style="background-color: rgb(189, 189, 189);">
+        <tr>
+            <th>PlateIDs</th>
+            <th>ID</th>
+            <th>Plate</th>
+            <th>Media</th>
+            <th>Strain</th>
+            <th>Metadata/Modifications</th>
+            <th>Phylogroup/Genome Cluster</th>
+            <th>MLST</th>
+            <th>Project</th>
+        </tr>
+    </thead>
+</table>
+
+</div>
+
+<div class = "dtprojectforstrain">
+    <table id="project_id" class ="table table-hover">
+        <thead style="background-color: rgb(189, 189, 189);">        
+            <tr>
+                <th>Projects</th>
+                <th>Descriptions</th>
+            </tr>
+        </thead>
+    </table>
+    
+</div>
+
+<!-- <div id="tree-container" style="margin-left: 30%;margin-top: 100px;"></div> -->
+{% endblock %}
+
+{% block script%}
+
+<script>
+
+
+
+    
+    $(document).ready(function() {
+        var table = $('#table_id').DataTable( {
+            //"ajax": '/strains/json',
+            "ajax":'/strains/json?strain={{specie}}',
+            "lengthChange": true,
+            "deferRender": true,
+            "info": true,
+            "lengthMenu": [[8, 20, 50, -1], [8, 20, 50, "All"]],
+            "columnDefs": [{
+                "targets": 0, // Assuming PlateIDs is the first column
+                "visible": false,
+                "searchable": false
+            }]
+        } );
+
+        // Attach click event listener to each row
+        $('#table_id tbody').on('click', 'tr', function() {
+        var plateID = table.row(this).data()[0]; // Assuming PlateID is the first column
+        var plate = table.row(this).data()[2];
+        var media = table.row(this).data()[3];
+        var strid = table.row(this).data()[1];
+        var metadata = table.row(this).data()[5];
+        var strain = table.row(this).data()[4];
+        var url = "{{ url_for('mainstraindata') }}" + "?pltid=" + plateID + "&strn={{ specie }}" + "&plate=" + plate+ "&media=" + media+ "&strid=" + strid+ "&metadata=" + metadata+ "&strain=" + strain;
+        window.location.href = url; // Redirect to the constructed URL
+        });
+
+    //    $('#table_id').on('click', 'tr', function () {
+    //        console.log('API row values : ', table.row(this).data());
+
+    //    })
+    } );
+
+    $(document).ready(function() {
+        $('#project_id').DataTable( {
+            "ajax": '/projects/json?strain={{specie}}',
+            "info" : false,
+            "lengthChange": false,
+            "deferRender": false,
+            "scrollY":true,
+            "bPaginate":false,
+            "bFilter": false,
+            "bInfo": false
+        } );
+    } );
+
+
+
+
+// Highcharts.chart('container', {
+//     title: {
+//         text: ''
+//     },
+
+//     xAxis: [{
+//         title: { text: 'Wells' },
+//         alignTicks: false
+//     }, {
+//         title: { text: 'Wells' },
+//         alignTicks: false,
+//         opposite: true
+//     }],
+
+//     yAxis: [{
+//         title: { text: 'Max Respiration' }
+//     }, {
+//         title: { text: 'Max Respiration' },
+//         opposite: true
+//     }],
+
+//     plotOptions: {
+//         histogram: {
+//             accessibility: {
+//                 point: {
+//                     valueDescriptionFormat: '{index}. {point.x:.3f} to {point.x2:.3f}, {point.y}.'
+//                 }
+//             }
+//         }
+//     },
+
+//     series: [{
+//         name: 'Growth Max Respiration',
+//         type: 'histogram',
+//         xAxis: 1,
+//         yAxis: 1,
+//         baseSeries: 's1',
+//         zIndex: -1,
+//         color:'red'
+//     }, {
+//         name: 'Growth',
+//         type: 'scatter',
+//         data: data,
+//         id: 's1',
+//         marker: {
+//             radius: 1.5
+//         },
+//         color:'red'},
+        
+//     {
+//         name: 'No Growth Max Respiration',
+//         type: 'histogram',
+//         xAxis: 1,
+//         yAxis: 1,
+//         baseSeries: 's2',
+//         zIndex: -1,
+//         color:'darkblue'
+//     },
+//     {
+//         name: 'No Growth',
+//         type: 'scatter',
+//         data: data2,
+//         id: 's2',
+//         marker: {
+//             radius: 1.5
+//         },
+//         color:'darkblue'
+
+//     },
+    // {
+    //     name: 'Uncertain Growth Max Respiration',
+    //     type: 'histogram',
+    //     xAxis: 1,
+    //     yAxis: 1,
+    //     baseSeries: 's3',
+    //     zIndex: -1
+
+    // },
+    // {
+    //     name: 'Uncertain Growth Max Respiration',
+    //     type: 'scatter',
+    //     data: data3,
+    //     id: 's3',
+    //     marker: {
+    //         radius: 1.5
+    //     }   
+    // }
+//     ]
+// });
+</script>
+
+<script>
+    // Fetch the tree data from the Flask endpoint
+    fetch('/tree_json?specie={{specie}}')
+        .then(response => response.json())
+        .then(data => drawTree(data));
+
+    function drawTree(treeData) {
+        const width = 600;
+        const height = 600;
+        const radius = width / 1.8;
+
+        const tree = d3.cluster()
+            .size([2 * Math.PI, radius - 100]);
+
+        const root = d3.hierarchy(treeData);
+        tree(root);
+
+        const svg = d3.select("#tree-container")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", `translate(${width / 2},${height / 2})`);
+
+        const link = svg.selectAll(".link")
+            .data(root.links())
+            .enter().append("line")
+            .attr("class", "link")
+            .attr("x1", d => radialPoint(d.source.x, d.source.y)[0])
+            .attr("y1", d => radialPoint(d.source.x, d.source.y)[1])
+            .attr("x2", d => radialPoint(d.target.x, d.target.y)[0])
+            .attr("y2", d => radialPoint(d.target.x, d.target.y)[1])
+            .style("stroke", "black")  // Change the stroke color to black
+            .style("stroke-width", 2); // Increase the stroke width for darker lines
+
+        // Define a color scale for the clusters
+        const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+        const node = svg.selectAll(".node")
+            .data(root.descendants())
+            .enter().append("g")
+            .attr("class", "node")
+            .attr("transform", d => `
+                rotate(${d.x * 180 / Math.PI - 90})
+                translate(${d.y},0)
+            `).filter(d => d.data.name);
+
+        node.append("circle")
+            .attr("r", 4.5) // Adjust the radius for the desired size
+            .style("fill", d => {
+                const color = d.data.cluster ? colorScale(d.data.cluster) : "#fff";
+                console.log("Applying color:", color, "to node with cluster:", d.data.cluster);
+                return color;
+            })
+            .style("stroke", "black")
+            .style("stroke-width", 2)
+            .on("mouseover", function(event, d) {
+                if (d.data.name) {
+                    d3.select(this).style("stroke", "orange");
+                    tooltip.transition()
+                        .duration(200)
+                        .style("opacity", .9);
+                    tooltip.html(`Name: ${d.data.name}<br>Cluster: ${d.data.cluster || 'None'}`)
+                        .style("left", (event.pageX + 5) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                }
+            })
+            .on("mouseout", function(event, d) {
+                if (d.data.name) {
+                    d3.select(this).style("stroke", "black");
+                    tooltip.transition()
+                        .duration(500)
+                        .style("opacity", 0);
+                }
+            });
+
+        node.append("text")
+            .attr("dy", "0.31em")
+            .attr("x", d => d.x < Math.PI ? 10 : -10) // Adjust the x-coordinate offset for the text
+            .attr("transform", d => d.x >= Math.PI ? "rotate(180)" : null)
+            .style("text-anchor", d => d.x < Math.PI ? "start" : "end")
+            .style("fill", d => {
+                const color = d.data.cluster ? colorScale(d.data.cluster) : "#000"; // Default to black if no cluster
+                return color;
+            })
+            .style("font-size", "12px")
+            .text(d => d.data.name)
+            .on("mouseover", function(event, d) {
+                if (d.data.name) {
+                    tooltip.transition()
+                        .duration(200)
+                        .style("opacity", .9);
+                    tooltip.html(`Name: ${d.data.name}<br>Cluster: ${d.data.cluster || 'None'}`)
+                        .style("left", (event.pageX + 5) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                }
+            })
+            .on("mouseout", function(event, d) {
+                if (d.data.name) {
+                    tooltip.transition()
+                        .duration(500)
+                        .style("opacity", 0);
+                }
+            });
+
+
+        const tooltip = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
+        // Extract unique clusters and create a legend
+        const clusters = Array.from(new Set(root.descendants().map(d => d.data.cluster).filter(c => c)));
+
+        const legendWidth = 1000; // Set the legend width to match the tree container width
+        const legendHeight = 50;
+
+        const legendSvg = d3.select("#legend-container")
+            .append("svg")
+            .attr("width", legendWidth)
+            .attr("height", legendHeight)
+            .append("g")
+            .attr("transform", `translate(20, 15)`); // Adjust position below the tree
+
+            const legendItemWidth = 80; // Width of each legend item
+            const totalLegendWidth = clusters.length * legendItemWidth; // Total width of the legend
+            const startX = (legendWidth - totalLegendWidth) / 2; // Starting X position to center the legend
+
+        clusters.forEach((cluster, i) => {
+            const legendItem = legendSvg.append("g")
+                .attr("transform", `translate(${startX + i * legendItemWidth}, 15)`); // Increase the horizontal distance between legend items
+
+            legendItem.append("circle")
+                .attr("cx", 0)
+                .attr("cy", 0)
+                .attr("r", 5)
+                .style("fill", colorScale(cluster));
+
+            legendItem.append("text")
+                .attr("x", 10)
+                .attr("y", 5)
+                .text(cluster)
+                .style("fill", colorScale(cluster))
+                .style("font-size", "15px");
+
+            // Highlight corresponding nodes on hover
+            legendItem.on("mouseover", function() {
+                node.selectAll("circle")
+                    .style("opacity", d => d.data.cluster === cluster ? 1 : 0.2);
+
+                node.selectAll("text")
+                    .style("opacity", d => d.data.cluster === cluster ? 1 : 0.2);
+            }).on("mouseout", function() {
+                node.selectAll("circle").style("opacity", 1);
+                node.selectAll("text").style("opacity", 1);
+            });
+        });
+
+        function radialPoint(x, y) {
+            return [y * Math.cos(x - Math.PI / 2), y * Math.sin(x - Math.PI / 2)];
+        }
+    }
+</script>
+
+
+{%endblock%}

@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/histogram-bellcurve.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+
+
+
+    <style>
+        .node circle {
+            stroke-width: 0px;
+            size: 1cm;
+        }
+
+        .node text {
+            font: 12px sans-serif;
+            text-anchor: middle;
+            font-weight: bold;
+        }
+
+        .link {
+            fill: none;
+            stroke: #ccc;
+            stroke-width: 1.5px;
+        }
+
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            width: 150px;
+            height: 28px;
+            padding: 2px;
+            font: 12px sans-serif;
+            background: lightsteelblue;
+            border: 0px;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+        #legend-container {
+            display: inline-block;
+            vertical-align: top;
+            margin-top: 5%;
+            margin-right: -2%;
+            margin-left:2%;
+        }
+
+        #tree-container {
+            display: inline-block;
+            width: 500px;
+            margin-left: -5%;
+            vertical-align: top;
+        }
+
+
+        .highcharts-figure {
+            display: inline-block;
+            width: 30%;
+            vertical-align: top;
+            margin-left: 65%;
+            margin-top: -30%; /* Adjusted for better alignment */
+        }           
+
+
+        .highcharts-figure {
+            display: inline-block;
+            width: 30%;
+            vertical-align: top;
+            margin-left: 65%;
+            margin-top:-40%
+        }
+
+        #container {
+            height: 400px;
+        }
+
+        .highcharts-data-table table {
+            font-family: Verdana, sans-serif;
+            border-collapse: collapse;
+            border: 1px solid #ebebeb;
+            margin: 10px auto;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .highcharts-data-table caption {
+            padding: 1em 0;
+            font-size: 1.2em;
+            color: #555;
+        }
+
+        .highcharts-data-table th {
+            font-weight: 600;
+            padding: 0.5em;
+        }
+
+        .highcharts-data-table td,
+        .highcharts-data-table th,
+        .highcharts-data-table caption {
+            padding: 0.5em;
+        }
+
+        .highcharts-data-table thead tr,
+        .highcharts-data-table tr:nth-child(even) {
+            background: #f8f8f8;
+        }
+
+        .highcharts-data-table tr:hover {
+            background: #f1f7ff;
+        }
+
+        #container_kinetics {
+            margin-left: 10%; /* Change to percentage for responsiveness */
+            width: 80%; /* Adjusted for better alignment */
+            margin-top: 20px; /* Adjusted for better alignment */
+            margin-bottom: 20px; /* Adjusted for better alignment */
+        }
+
+        .highcharts-credits {
+            display: none !important;
+            }
+
+
+            /* Hide the contextButton (export menu button) */
+            .highcharts-contextbutton {
+            display: none;
+            }
+
+            /* Hide the exportButton (export to PNG/SVG/CSV/XLS button) */
+            .highcharts-exporting-group {
+            display: none;
+            }
+
+            /* Hide the printButton (print chart button) */
+            .highcharts-button-symbol.highcharts-print-button {
+            display: none;
+            }
+
+            /* Style for the scrollable dropdown */
+        .dropdown-menu-scrollable {
+            max-height: 150px;  /* Adjust height as needed */
+            overflow-y: auto;
+        }
+
+
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-sm navbar-light" style="background-color: white;">
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+          <a class="nav-link" id="a-dashboard" href="{{url_for('index')}}" onclick="dodajAktywne(this)">Dashboard<span class="sr-only">(current)</span></a>
+          <a class="nav-link" href="{{url_for('about')}}">About <span class="sr-only">(current)</span></a>
+          <a class="nav-link" href="{{url_for('plates')}}">Plates <span class="sr-only">(current)</span></a>
+          <ul class="navbar-nav" style="margin-left: auto;font-family: monospace;">
+            <li class="nav-item active">
+              <!-- <a class="nav-link" href="#">About <span class="sr-only">(current)</span></a> -->
+            </li>
+            <li class="nav-item">
+              <!-- <a class="nav-link" href="#">Contact</a> -->
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+    <h4 style="margin-left:1.5%"><u>{{specie[0].upper()+'. '+specie[1:]}}</u></h1>
+
+
+    <div style="margin: 20px;">
+        <label for="comps-dropdown">Choose Substrate/Inhibitor: Tree shows strains which grow/don't grow on substrates/inhibitors and strains without available data</label>
+        <select id="comps-dropdown" style="width: 100%;"></select>
+    </div>  
+
+    
+    <h6 id="species-header" style="margin-left:1.5%"></h1>
+
+   
+    <div id="legend-container" style="width: 200px;"></div>
+    <div id="tree-container"></div>
+    <!-- <p style="margin-left: 34%;font-style: italic;font-weight: 300;">Mash based tree of all strains with Biolog Data. Legend indicates genomic cluster/phylogroup</p> -->
+
+
+    <figure class="highcharts-figure">
+        <div id="container"></div>
+        <p style="align-self: center;margin-left: 5%;">
+            Left indicates the median distance between strains in a phylogroup/cluster and right indicates the median mash distance between all the strains that share 
+            the phenotype. A significant p-value indicates that strains sharing the phentoype are genomically further away from what is expected in a cluster, i.e., 
+            the phenotype is not shared ONLY between closely related strains and can exist in genomically different strains.
+        </p>
+    </figure>
+
+
+
+    <div class="dropdown" style="margin-left: 15%;">
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="background-color: #fffcfc;color: black;">
+        Max Resp
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <a class="dropdown-param-item dropdown-item"  data-param="Max Resp">Max Resp</a>
+        <a class="dropdown-param-item dropdown-item" data-param="Max Resp Rate">Max Resp Rate</a>
+        <a class="dropdown-param-item dropdown-item" data-param="Time till max resp">Time till max resp</a>
+        <a class="dropdown-param-item dropdown-item"  data-param="AUC">AUC</a>
+        </div>
+    </div>
+    <div id="container_kinetics"></div>
+    
+    <script>
+
+        // Populate the dropdown with comps list
+        const comps = {{ comps|tojson }};
+        var specie_inter_mash = {{ specie_inter_mash|safe}}
+        var spe_min = {{ spe_min|safe}}
+        var spe_max = {{ spe_max|safe}}
+        var specie_inter_mash = {{ specie_inter_mash|safe}}
+        var specie_individual_points = {{ specie_individual_points|tojson }};
+        
+        const dropdown = $('#comps-dropdown');
+        comps.forEach(comp => {
+            dropdown.append(new Option(comp, comp));
+        });
+
+        // Initialize Select2 for searchable dropdown
+        $('#comps-dropdown').select2({
+            placeholder: 'Select a compound',
+            allowClear: true
+        });
+
+
+        // Event listener for dropdown change
+        dropdown.on('change', function() {
+            const selectedComp = $(this).val();
+            const [plate, well, compound] = selectedComp.split(', ').map(item => item.split(': ')[1]);
+            fetchTreeData(plate, well,compound);
+        });
+
+
+
+        // Fetch the tree data from the Flask endpoint
+        function fetchTreeData(plate, well,compound) {
+        fetch(`/track_tree_json?specie={{ specie }}&plate=${plate}&well=${well}`)
+            .then(response => response.json())
+            .then(data => {
+            // Access the tree data and extra info
+            const treeData = data.tree_data;
+            var phe_mash = data.phe_mash;
+            var phe_min = data.phe_min;
+            var phe_max = data.phe_max;
+            var phe_individual_points = data.phe_individual_points;
+            var kinetic_means = data.kinetic_means;
+            var kinetic_errors = data.kinetic_errors;
+            var all_strains = data.all_strains;
+            var pval = data.pval;
+            var growth_strains = data.growth_strains;
+            var nogrowth_strains = data.nogrowth_strains;
+
+            console.log(growth_strains)
+
+            const header = document.getElementById('species-header');
+            header.textContent = `Plate: ${plate}, Well: ${well}, Compound: ${compound}`;
+
+
+            if (phe_mash === 'null') {
+                phe_mash = null
+                Highcharts.charts[0].update({
+                    series: [{
+                        name: 'Median mash distance',
+                        type: 'column',
+                        color: 'rgba(107, 139, 188, 0.5)',
+                        data:[
+                            {
+                                y: specie_inter_mash,
+                                color: 'blue' // Color for specie_inter_mash
+                            },
+                            {
+                                y: phe_mash,
+                                color: 'green' // Color for phen_inter_mash
+                            }]
+                    },
+
+                {
+                    name: 'Species Individual Points',
+                    type: 'scatter',
+                    color: 'blue',
+                    data: specie_individual_points.map(value => [0, value]),
+                    marker: {
+                        radius: 5
+                    },
+                    tooltip: {
+                        pointFormat: '<b>{point.y}</b>'
+                },
+                
+            },
+            {
+                    name: 'Phenotype Individual Points',
+                    type: 'scatter',
+                    color: 'green',
+                    // yAxis: 0,
+                    data: [],//phe_individual_points.map(value => [1, value]),
+                    marker: {
+                        radius: 5
+                    },
+                    tooltip: {
+                        pointFormat: '<b>{point.y}</b>'
+                    }
+                }
+                
+                ],
+                    xAxis: [
+                            {
+                                categories: [
+                                    'mean mash amongst strains in all clusters/phylogroups',
+                                    'No strains utilizing/inhibited on '+ compound,
+                                ]
+                            }
+                        ],
+                        subtitle: {
+                            text: 'p-value: N.A',
+                            style: {
+                                fontSize: '14px'
+                            }
+                        }
+                });
+                
+            } 
+
+            else{
+            Highcharts.charts[0].update({
+                    series: [
+                        
+                    {name: 'Median mash distance',
+                    data:[
+                            {
+                                y: specie_inter_mash,
+                                color: 'blue' // Color for specie_inter_mash
+                            },
+                            {
+                                y: phe_mash,
+                                color: 'green' // Color for phen_inter_mash
+                            }],
+                    },
+                
+
+            //     {
+            //         name: 'Species Individual Points',
+            //         type: 'scatter',
+            //         color: 'blue',
+            //         // yAxis: 0,
+            //         data: specie_individual_points.map(value => [0, value]),
+            //         marker: {
+            //             radius: 5
+            //         },
+            //         tooltip: {
+            //             pointFormat: '<b>{point.y}</b>'
+            //     }
+            // },
+
+            //     {
+            //         name: 'Phenotype Individual Points',
+            //         type: 'scatter',
+            //         color: 'green',
+            //         // yAxis: 0,
+            //         data: phe_individual_points.map(value => [1, value]),
+            //         marker: {
+            //             radius: 5
+            //         },
+            //         tooltip: {
+            //             pointFormat: '<b>{point.y}</b>'
+            //         }
+            //     },
+            ],
+                    xAxis: [
+                            {
+                                categories: [
+                                    'median mash amongst strains in all clusters/phylogroups',
+                                    'median mash between '+compound+' utilizing/inhibited strains',
+                                ]
+                            }
+                        ],
+                        subtitle: {
+                            text: 'p-value: '+pval,
+                            style: {
+                                fontSize: '14px'
+                            }
+                        }
+                });}
+
+            // const secondBarLabel = 'mean mash between ' + compound + ' utilizing/inhibited strains';
+            // const secondBarData = isNaN(phe_mash) ? null : phe_mash;
+
+
+
+            // Call the drawTree function with the tree data
+            drawTree(treeData);
+            let kineticChart;
+
+            kineticChart = Highcharts.chart('container_kinetics', {
+                        chart: {
+                            zoomType: 'x'
+                        },
+                        title: {
+                            text: 'Kinetic Parameters'
+                        },
+                        xAxis: {
+                            categories: all_strains,
+                            pointRange: 20
+                        },
+
+                        scrollbar: {
+                                    enabled: true,
+                                    margin: 50,
+                                    showFull: false
+                                },
+
+                        yAxis: [
+                            {
+                                // Primary yAxis
+                                title: {
+                                    text: 'Max Resp',
+                                },
+                            },
+                        ],
+
+                        tooltip: {
+                            shared: true
+                        },
+
+                        plotOptions: {
+                            series: {
+                                marker: {
+                                    enabled: false,
+                                    states: {
+                                        hover: {
+                                            enabled: false
+                                        }
+                                    }
+                                }
+                            }
+                        },
+
+                        series: [{
+                                name: '',
+                                type: 'column',
+                                color:'rgba(0,0,0,0)',
+                                data: kinetic_means,
+                                tooltip: {
+                                    pointFormat: '<span style="font-weight: bold; color: {series.color}">{series.name}</span>:'
+                                },
+                            },
+                            {
+                                name: '',
+                                type: 'errorbar',
+                                yAxis: 0, // Use yAxis index 0 for the 'Rainfall error' series
+                                data: kinetic_errors,
+                                tooltip: {
+                                    pointFormat: ' replicate range: {point.low}-{point.high} FLU<br/>'
+                                },
+                            }
+                    ],});
+
+
+            //Make kinetic chart
+
+
+            function updateChart(param,growth_strains,no_growth_strains,specie,plate,well) {
+
+                    const dataToSend = {
+                    growth_strains: growth_strains,
+                    no_growth_strains: no_growth_strains,
+                    param: param,
+                    specie: specie,
+                    plate: plate,
+                    well: well
+                    };
+
+                    $.ajax({
+                        url: '/update_tracking_kinetics_chart',  // Add a route for updating chart data in your Flask app
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(dataToSend),
+                        success: function(response) {
+                            
+                            categories = response.categories;
+                            mean_data = response.mean_data;
+                            error_data = response.error_data;
+                            param_name = param;
+                            
+                            if (param === 'Max Resp') {
+                                    pointFormat = ' replicate range: {point.low}-{point.high} FLU<br/>';
+                                } else if (param === 'Max Resp Rate') {
+                                    pointFormat = ' replicate range: {point.low}-{point.high} FLU/hr<br/>';
+                                } else if (param === 'Time till max resp') {
+                                    pointFormat = ' replicate range: {point.low}-{point.high} hrs<br/>';
+                                } else if (param === 'AUC') {
+                                    pointFormat = ' replicate range: {point.low}-{point.high} FLU hr<br/>';
+                                } else {
+                                    pointFormat = ' replicate range: {point.low}-{point.high}<br/>'; // default format
+                                }
+
+                            if (kineticChart) {
+                                    // Redraw the chart with new data
+                                    kineticChart.update({
+                                        xAxis: {
+                                            categories: categories
+                                        },
+                                        yAxis:{
+                                            title: {
+                                        text: param_name,
+                                    }
+                                        },
+                                        series: [{
+                                            data: mean_data
+                                        }, {
+                                            data: error_data,
+                                            tooltip: {
+                                            pointFormat: pointFormat
+                                        }
+                                        }]
+                                    });
+                        }
+                    }
+                    });
+                }
+
+                $('.dropdown-param-item').click(function() {
+                var param = $(this).data('param');
+
+                $('#dropdownMenuButton').text(param);
+                updateChart(param,growth_strains,nogrowth_strains,'{{specie}}',plate,well);
+                });
+
+            });    
+        }
+        const defaultComp = dropdown.children().first().val();
+        const [defaultPlate, defaultWell, defaultCompound] = defaultComp.split(', ').map(item => item.split(': ')[1]);
+
+        // Call fetchTreeData with the default values
+        fetchTreeData(defaultPlate, defaultWell, defaultCompound);
+        // fetchTreeData('PM01', 'H12','Phenylethylamine');
+        // // Fetch the tree data from the Flask endpoint
+        // fetch('/track_tree_json?specie={{specie}}')
+        //     .then(response => response.json())
+        //     .then(data => drawTree(data));
+
+        function drawTree(treeData) {
+        const width = 1000;
+        const height = 1000;
+        const radius = width / 2;
+
+        // Clear existing SVG
+        d3.select("#tree-container").selectAll("svg").remove();
+
+        const tree = d3.cluster()
+            .size([2 * Math.PI, radius - 100]);
+
+        const root = d3.hierarchy(treeData);
+        tree(root);
+
+        const svg = d3.select("#tree-container")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", `translate(${width / 2},${height / 2})`);
+
+        const link = svg.selectAll(".link")
+            .data(root.links())
+            .enter().append("line")
+            .attr("class", "link")
+            .attr("x1", d => radialPoint(d.source.x, d.source.y)[0])
+            .attr("y1", d => radialPoint(d.source.x, d.source.y)[1])
+            .attr("x2", d => radialPoint(d.target.x, d.target.y)[0])
+            .attr("y2", d => radialPoint(d.target.x, d.target.y)[1])
+            .style("stroke", "black")
+            .style("stroke-width", 2);
+
+        // const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+        // Define custom color mapping
+        const labelColorMapping = {
+            'yes': 'green',
+            'no': 'red',
+            'uncertain/maybe': 'orange',
+            'data N.A': 'gray'
+        };
+
+        
+        const node = svg.selectAll(".node")
+            .data(root.descendants())
+            .enter().append("g")
+            .attr("class", "node")
+            .attr("transform", d => `
+                rotate(${d.x * 180 / Math.PI - 90})
+                translate(${d.y},0)
+            `).filter(d => d.data.name);
+
+        node.append("circle")
+            .attr("r", 4.5)
+            .style("fill", d => {
+                // const color = d.data.cluster ? colorScale(d.data.cluster) : "#fff";
+                const color = d.data.cluster ? labelColorMapping[d.data.cluster] : "#fff";
+                return color;
+            })
+            .style("stroke", "black")
+            .style("stroke-width", 2)
+            .on("mouseover", function(event, d) {
+                if (d.data.name) {
+                    d3.select(this).style("stroke", "orange");
+                    tooltip.transition()
+                        .duration(200)
+                        .style("opacity", .9);
+                    tooltip.html(`Name: ${d.data.name}<br>Trait: ${d.data.cluster || 'None'}`)
+                        .style("left", (event.pageX + 5) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                }
+            })
+            .on("mouseout", function(event, d) {
+                if (d.data.name) {
+                    d3.select(this).style("stroke", "black");
+                    tooltip.transition()
+                        .duration(500)
+                        .style("opacity", 0);
+                }
+            });
+
+        node.append("text")
+            .attr("dy", "0.31em")
+            .attr("x", d => d.x < Math.PI ? 10 : -10)
+            .attr("transform", d => d.x >= Math.PI ? "rotate(180)" : null)
+            .style("text-anchor", d => d.x < Math.PI ? "start" : "end")
+            .style("fill", d => {
+                const color = d.data.cluster ? labelColorMapping[d.data.cluster] : "#000";
+                // const color = d.data.cluster ? colorScale(d.data.cluster) : "#000";
+                return color;
+            })
+            .style("font-size", "12px")
+            .text(d => d.data.name)
+            .on("mouseover", function(event, d) {
+                if (d.data.name) {
+                    tooltip.transition()
+                        .duration(200)
+                        .style("opacity", .9);
+                    tooltip.html(`Name: ${d.data.name}<br>Trait: ${d.data.cluster || 'None'}`)
+                        .style("left", (event.pageX + 5) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                }
+            })
+            .on("mouseout", function(event, d) {
+                if (d.data.name) {
+                    tooltip.transition()
+                        .duration(500)
+                        .style("opacity", 0);
+                }
+            });
+
+        const tooltip = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
+        const clusters = Array.from(new Set(root.descendants().map(d => d.data.cluster).filter(c => c)));
+
+        // Clear existing legend
+        d3.select("#legend-container").selectAll("svg").remove();
+
+        const legendWidth = 200;
+        const legendHeight = clusters.length * 30;
+
+        const legendSvg = d3.select("#legend-container")
+            .append("svg")
+            .attr("width", legendWidth)
+            .attr("height", legendHeight)
+            .append("g")
+            .attr("transform", `translate(10, 10)`);
+
+
+        clusters.forEach((cluster, i) => {
+            const legendItem = legendSvg.append("g")
+                .attr("transform", `translate(0, ${i * 30})`);
+
+            legendItem.append("circle")
+                .attr("cx", 0)
+                .attr("cy", 0)
+                .attr("r", 5)
+                .style("fill", labelColorMapping[cluster]);
+
+
+            legendItem.append("text")
+                .attr("x", 15)
+                .attr("y",5)
+                .text(cluster)
+                .style("fill", labelColorMapping[cluster])
+                .style("font-size", "15px");
+
+
+            legendItem.on("mouseover", function() {
+                node.selectAll("circle")
+                    .style("opacity", d => d.data.cluster === cluster ? 1 : 0.2);
+
+                node.selectAll("text")
+                    .style("opacity", d => d.data.cluster === cluster ? 1 : 0.2);
+            }).on("mouseout", function() {
+                node.selectAll("circle").style("opacity", 1);
+                node.selectAll("text").style("opacity", 1);
+            });
+        });
+
+
+        function radialPoint(x, y) {
+            return [y * Math.cos(x - Math.PI / 2), y * Math.sin(x - Math.PI / 2)];
+        }
+    }
+    </script>
+
+
+
+<script>
+
+    Highcharts.chart('container', {
+    chart: {
+        zooming: {
+            type: 'xy'
+        }
+    },
+    title: {
+        text: ''
+    },
+    xAxis: [
+        {
+            categories: [
+                'Inter cluster mean',
+                'Feb',
+            ]
+        }
+    ],
+    yAxis: [
+        {
+            // Primary yAxis
+            labels: {
+            },
+            title: {
+                text: 'MASH distance',
+            },
+            max: 20*specie_inter_mash
+        },
+    ],
+
+    tooltip: {
+        shared: true
+    },
+
+    legend: {
+        enabled:false
+    },
+
+    series: [
+        {
+            name: 'Median mash distance',
+            type: 'column',
+            color: 'rgba(107, 139, 188, 0.5)',
+            // yAxis: 0,
+            data: [
+            {
+                y: specie_inter_mash,
+                color: 'blue' // Color for specie_inter_mash
+            },
+            {
+                y: specie_inter_mash,
+                color: 'green' // Color for phen_inter_mash
+            }
+            ],
+            tooltip: {
+                pointFormat:
+                    '<span style="font-weight: bold; color: {series.color}">' +
+                    '{series.name}</span>: <b>{point.y:.1f} mm</b> '
+            }
+        },
+
+
+        // {
+        //     name: 'Species Individual Points',
+        //     type: 'scatter',
+        //     color: 'blue',
+        //     // yAxis: 0,
+        //     data: specie_individual_points.map(value => [0, value]),
+        //     marker: {
+        //         radius: 5
+        //     },
+        //     tooltip: {
+        //         pointFormat: '<b>{point.y}</b>'
+        // }
+        // },
+
+        // {
+        //     name: 'Phenotype Individual Points',
+        //     type: 'scatter',
+        //     color: 'green',
+        //     // yAxis: 0,
+        //     data: [],
+        //     marker: {
+        //         radius: 5
+        //     },
+        //     tooltip: {
+        //         pointFormat: '<b>{point.y}</b>'
+        //     }
+        // }
+
+    ],
+    subtitle: {
+        text: 'p-value: ',
+        style: {
+            fontSize: '14px'
+        }
+    }
+});
+
+
+</script>
+
+</body>
+</html>

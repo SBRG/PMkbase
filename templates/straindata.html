@@ -1,0 +1,371 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+<style>
+
+.dtableforstrain{
+        margin-left:250px;
+    }
+.dtprojectforstrain{
+        margin-left:1000px;
+        margin-right: 100px;
+        height:50px;
+        margin-top: 200px;
+        width: 100px;
+        
+    }
+
+#project_id.dataTable tbody tr:hover {
+    background-color: lightgrey;
+    }
+
+#table_id.dataTable tbody tr:hover {
+    background-color: lightgrey;
+    }
+
+
+#container {
+    height: 200px;
+    margin-left: 210px;
+    float:left;
+}
+
+#container2 {
+    height: 200px;
+    margin-left: 1100px;
+    float:left;
+    margin-top: -500px;
+}
+
+#wrapper {
+    /* width: 1500px; */
+    /* border: 1px solid black; */
+    overflow: hidden; /* will contain if #first is longer than #second */
+}
+
+.highcharts-figure,
+.highcharts-data-table table {
+    min-width: 360px;
+    max-width: 800px;
+    margin: 1em auto;
+}
+
+.highcharts-data-table table {
+    font-family: Verdana, sans-serif;
+    border-collapse: collapse;
+    border: 1px solid #ebebeb;
+    margin: 10px auto;
+    text-align: center;
+    width: 100%;
+    max-width: 500px;
+}
+
+.highcharts-data-table caption {
+    padding: 1em 0;
+    font-size: 1.2em;
+    color: #555;
+}
+
+.highcharts-data-table th {
+    font-weight: 600;
+    padding: 0.5em;
+}
+
+.highcharts-data-table td,
+.highcharts-data-table th,
+.highcharts-data-table caption {
+    padding: 0.5em;
+}
+
+.highcharts-data-table thead tr,
+.highcharts-data-table tr:nth-child(even) {
+    background: #f8f8f8;
+}
+
+.highcharts-data-table tr:hover {
+    background: #f1f7ff;
+}
+</style>
+
+{% endblock %}
+
+
+
+
+{% block body %}
+
+<h3 style="margin-left: 300px;margin-top: 50px;text-decoration: underline;margin-right: 795px;font-family: monospace;">Click on a cell to plot respiration curves</h3>
+
+<div style="width:50px;margin-left: 450px;margin-top:10px;height:50px;float: left;background: #cb9be8;border:2px solid #000;"></div>
+<div style="width:50px;margin-left: 100px;;margin-top:10px;height:50px;float: left;background: #FFFFFF;border:2px solid #000;"></div>
+<div style="width:50px;margin-left: 100px;;margin-top:10px;height:50px;float: left;background: #cc819d;border:2px solid #000;"></div>
+<div style="margin-top:120px;margin-left: 450px;height:10px;position: sticky;">Growth</div>
+<div style="margin-left:590px;height:10px;position: sticky;margin-top: -10px;">No Growth</div>
+<div style="margin-left: 740px;height:10px;margin-top: -10px">Uncertain</div>
+
+<div id = "wrapper">
+<div id="container" class="chart" style="height: 500px; width: 800px;margin-top: 10px;float: left"></div>
+<div id="container2" class="chart" style="height: 500px; width: 600px;float: left;"></div>
+</div>
+<br>
+<br>
+<h3 style="margin-left: 810px;text-decoration: underline;margin-right: 705px;font-family: monospace;">Kinetic Parameters</h3>
+<div class = "dprojectforstrain" style="margin-left: 210px;width:1600px;margin-top:30pxpx;">
+    <table id="table_id" class ="table table-hover">
+        <thead class="thead-light">        
+            <tr>
+                <th>PlateID</th>
+                <th>Plate</th>
+                <th>Well</th>
+                <th>Compound</th>
+                <th>Max Respiration</th>
+                <th>Max Respiration Rate</th>
+                <th>Time till max resp rate(hrs)</th>
+                <th>AUC</th>
+                <th>Z-Score(wrt controls)</th>
+                <th>Growth(1)/No Growth(0)/Uncertain(0.5)</th>
+                <th>KEGG ID</th>
+                <th>CAS ID</th>
+            </tr>
+        </thead>
+    </table>
+    
+    </div>
+
+<script>
+    var chart_id = {{ chartID|safe}}
+    var legend = {{legend|safe}}
+    var title = {{ title|safe}}
+    var chart = {{ chart|safe}}
+    var xAxis = {{ xAxis|safe}}
+    var yAxis = {{ yAxis|safe}}
+    var data = {{ data|safe}}
+    var compound_dict = {{ compound_dict|safe}}
+
+</script> 
+
+<script src="https://code.highcharts.com/10.3.3/highcharts.js"></script>
+<script src="https://code.highcharts.com/10.3.3/modules/heatmap.js"></script>
+<script src="https://code.highcharts.com/10.3.3/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/10.3.3/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/10.3.3/modules/accessibility.js"></script>
+
+{% endblock %}
+
+{% block script%}
+
+<script>
+
+function getPointCategoryName(point, dimension) {
+    var series = point.series,
+        isY = dimension === 'y',
+        axis = series[isY ? 'yAxis' : 'xAxis'];
+    return axis.categories[point[isY ? 'y' : 'x']];
+}
+
+function getCompoundInWell(point,dimension){
+
+    well_char = getPointCategoryName(point, 'y')
+    well_id = getPointCategoryName(point, 'x')
+    well = well_char + well_id
+    compound = compound_dict[well]
+    return compound
+}
+
+// function animatePoint(point) {
+//   point.graphic.animate({ r: 100 }, { duration: 100000000, complete: function() {
+//       animatePoint(point); // recursively call the function to repeat the animation
+//     }});
+// }
+
+// $(document).ready(function() {
+    var table = $('#table_id').DataTable( {
+            "select": true,
+            //"ajax": '/strains/json',
+            "ajax":'/strain_kinetics/json',
+            "lengthChange": true,
+            "deferRender": true,
+            "info": true,
+            "lengthMenu": [[10, 50, 80, -1], [10, 50, 80, "All"]],
+        } );
+
+        $('#table_id').on('click', 'tr', function() {
+            console.log('API row values : ', table.row(this).data());
+        
+        })
+    // } );
+
+Highcharts.chart('container',{
+        //   chart: chart,
+        chart: {type: 'heatmap',marginTop: 40,marginBottom: 80,plotBorderWidth: 1,
+                events:{
+                    click: function(event){
+                        var chart = this,
+                            point = chart.hoverPoint;
+                        if(point){
+                            point.graphic.attr({opacity:0.8});
+                        }
+
+                    }
+                }},
+          title: title,
+          xAxis: xAxis,
+          yAxis: yAxis,
+          accessibility: {
+                point: {
+                    descriptionFormatter: function (point) {
+                        var ix = point.index + 1,
+                            xName = getPointCategoryName(point, 'x'),
+                            yName = getPointCategoryName(point, 'y'),
+                            val = point.value;
+                        return ix + '. ' + xName + ' sales ' + yName + ', ' + val + '.';
+                    }
+                }
+            },
+        colorAxis: {
+                min: 0,
+                stops:[[0,'#FFFFFF'],[0.5,'#cc819d'],[1,'#cb9be8']],
+                minColor: '#FFFFFF',
+                maxColor : '#cb9be8',
+                // maxColor: Highcharts.getOptions().colors[0]
+                showInLegend:false,
+
+            },
+
+        tooltip: {
+                formatter: function () {
+                    if(this.point.value==1){
+                        return '<b>'+ getPointCategoryName(this.point, 'y')+'</b>'+'<b>'+getPointCategoryName(this.point, 'x')+'</b>'+': '+
+                        '<b>'+getCompoundInWell(this.point,'y')+'</b>'+'<b>'+', Growth: Yes'+'</b>';
+                        
+                    }
+                    else if(this.point.value==0){
+                        return '<b>'+ getPointCategoryName(this.point, 'y')+'</b>'+'<b>'+getPointCategoryName(this.point, 'x')+'</b>'+': '+
+                        '<b>'+getCompoundInWell(this.point,'y')+'</b>'+'<b>'+', Growth: No'+'</b>';
+
+                    }
+                    else{
+                        return '<b>'+ getPointCategoryName(this.point, 'y')+'</b>'+'<b>'+getPointCategoryName(this.point, 'x')+'</b>'+': '+
+                        '<b>'+getCompoundInWell(this.point,'y')+'</b>'+'<b>'+', Growth: Uncertain'+'</b>';;
+                    }
+                }
+            },
+
+        plotOptions: {
+            series:{
+                point:{
+                    events:{
+                        click: function(){
+   
+                            var well_dict = {0:"A",1:"B",2:"C",3:"D",4:"E",5:"F",6:"G",7:"H"};
+                            var well_char = well_dict[this.y];
+                            var well_id = this.x+1;
+                            if(well_id<10){
+                                well_id = "0"+well_id
+                            }
+                            var well = well_char+well_id;
+                            table.search(well).draw();
+
+                        
+                            // Send AJAX request to FLASK backend
+                            $.ajax({
+                                type: "POST",
+                                url: "/get_growth_curves/json",
+                                data: {'well': well,'plateid':'ECP120'},
+                                success: function(response){
+                                    // Create a new chart with Flask backend
+                                   
+                                    Highcharts.chart('container2',{
+
+                                        title: {
+                                            text: 'Respiration Curves',
+                                            align: 'center'
+                                        },
+
+                                        yAxis: {
+                                            title: {
+                                                text: 'Fluoroscence signal'
+                                            },
+                                            min:0,
+                                            max:300
+                                        },
+                                        
+                                        xAxis:{categories:response.categories},
+                                        
+                                        series: response.data,
+
+                                        responsive: {
+                                            rules: [{
+                                                condition: {
+                                                    maxWidth: 500
+                                                },
+                                                chartOptions: {
+                                                    legend: {
+                                                        layout: 'horizontal',
+                                                        align: 'center',
+                                                        verticalAlign: 'bottom'
+                                                    }
+                                                }
+                                            }]
+                                        }
+                                    })
+                                }
+                            })
+                        }
+                    }
+
+                }
+            }
+        },
+
+
+    series: [{
+        name: 'Growth(1)/No Growth(0)/Uncertain(0.5)',
+        borderWidth: 2.5,
+        data: data,
+        borderColor:'#0a000f',
+        dataLabels: {
+            enabled: false,
+            color: '#000000'
+        },
+        showInLegend:false
+    }],
+
+        responsive: {
+            rules: [{
+                condition: {
+                    maxWidth: 500
+                },
+                chartOptions: {
+                    yAxis: {
+                        labels: {
+                            formatter: function () {
+                                return this.value.charAt(0);
+                            }
+                        }
+                    }
+                }
+            }]
+        }
+    });
+
+
+// // $(document).ready(function() {
+//         var table = $('#table_id').DataTable( {
+//             //"ajax": '/strains/json',
+//             "ajax":'/strain_kinetics/json',
+//             "lengthChange": true,
+//             "deferRender": true,
+//             "info": true,
+//             "lengthMenu": [[10, 50, 80, -1], [10, 50, 80, "All"]],
+//         } );
+
+//         $('#table_id').on('click', 'tr', function() {
+//             console.log('API row values : ', table.row(this).data());
+        
+//         })
+//     // } );
+</script>
+
+{%endblock%}
