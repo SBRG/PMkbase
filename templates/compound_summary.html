@@ -134,7 +134,7 @@
 
     <h4 style="margin-left:1.5%"><u>{{plate+', '+well+': '+compound+': '+desc}}</u></h1>
     <br>
-    <h5 style="margin-left:1.5%">Growing samples</h5>
+    <h5 style="margin-left:1.5%">Active samples</h5>
     <!-- <h4 style="margin-left:1.5%"><u>{{compound+': '+desc}}</u></h1> -->
 
 
@@ -170,7 +170,7 @@
     </div>
 
 
-    <h5 style="margin-left:1.5%;">Non Growing samples</h5>
+    <h5 style="margin-left:1.5%;">Inactive samples</h5>
 
     <div class="flex-container">
         <div class="table-container">
@@ -246,7 +246,7 @@
                             },
 
                             series: [{
-                                name:'% Growing samples',
+                                name:'% Active samples',
                                 data: chartData,
                                 marker: {
                                     enabled: false
@@ -301,7 +301,7 @@
                             },
 
                             series: [{
-                                name:'% Non-Growing samples',
+                                name:'% Inactive samples',
                                 data: chartData,
                                 marker: {
                                     enabled: false
@@ -337,7 +337,7 @@
         type: 'bar'
     },
     title: {
-        text: '% Samples with growth',
+        text: '% Active Samples',
         align: 'left'
     },
     xAxis: {
@@ -351,7 +351,7 @@
         min: 0,
         max: 100,
         title: {
-            text: '% Growing Samples',
+            text: '% Active Samples',
             align: 'high'
         },
         labels: {
@@ -411,7 +411,7 @@ Highcharts.chart('container2', {
         type: 'bar'
     },
     title: {
-        text: '% Non growing samples',
+        text: '% Inactive samples',
         align: 'left'
     },
 
@@ -427,7 +427,7 @@ Highcharts.chart('container2', {
         min: 0,
         max: 100,
         title: {
-            text: '% Non Growing Samples',
+            text: '% Inactive Samples',
             align: 'high'
         },
         labels: {
