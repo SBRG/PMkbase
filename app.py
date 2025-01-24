@@ -27,6 +27,7 @@ app = Flask(__name__,template_folder='templates',static_url_path='/static')
 app.secret_key = 'sbrg_omnilog'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///growth_data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['MAX_CONTENT_LENGTH'] = 10000*1024*1024
 db.init_app(app)
 
 # with app.app_context():
@@ -636,7 +637,7 @@ def get_growth_curves():
 @app.route('/strains/json', methods=['GET'])
 def strains_json():
     strain = request.args.get('strain')
-    strain_data = pd.read_csv('./static/'+strain+'/metadata/summary.csv')
+    strain_data = pd.read_csv('./static/'+strain+'/metadata/updated_summary.csv')
 
     out2 = []
 
@@ -650,7 +651,13 @@ def strains_json():
         phylo = strain_data.loc[i,'Phylogroup/Genome Cluster']
         mlst = strain_data.loc[i,'MLST']
         project = strain_data.loc[i,'Project']
-        
+        temperature = strain_data.loc[i,'Temperature']
+        respiration = strain_data.loc[i,'Respiration']
+        marker = strain_data.loc[i,'Selection Marker']
+        reader = strain_data.loc[i,'Plate Reader']
+        mode = strain_data.loc[i,'Detection mode']
+        replicates = strain_data.loc[i,'Replicates']
+
 
         out2.append([
             #"<a href="+url_for('mainstraindata',pltid=str(plateid),strn=request.args.get('strain'))+">"+str(plateid)+"</a>",
@@ -663,7 +670,13 @@ def strains_json():
             str(metadata),
             str(phylo),
             str(mlst),
-            str(project),])
+            str(project),
+            str(temperature),
+            str(respiration),
+            str(marker),
+            str(reader),
+            str(mode),
+            str(replicates)])
 
 
     #return jsonify(data=out)
@@ -678,10 +691,12 @@ def projects():
     for i in project_data.index:
         project = project_data.loc[i,'Project']
         description = project_data.loc[i,'Description']
+        doi = project_data.loc[i,'DOI']
 
         out2.append([
             str(project),
-            str(description)])
+            str(description),
+            "<a href=https://"+str(doi)+">"+str(doi)+"</a>"])
 
 
     #return jsonify(data=out)
