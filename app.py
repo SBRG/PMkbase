@@ -1077,13 +1077,14 @@ def download_sample_processed_upload_data():
     return response
 
 if __name__ == "__main__":
-    # with app.app_context():
-    #     db.drop_all()
-    #     db.create_all()
-    #     species_list = ['ecoli', 'pputida', 'saureus']
-    #     for specie in species_list:
-    #         ingest_data(specie)
-    #         ingest_trait_data(specie)
-    #         ingest_kinetic_data(specie)
+    with app.app_context():
+         #db.drop_all()
+         #db.create_all()
+         species_list = ['ecoli', 'pputida', 'saureus']
+         for specie in species_list:
+             print(specie)
+             #ingest_data(specie)
+             #ingest_trait_data(specie)
+             #ingest_kinetic_data(specie)
     app.run(debug=True)
 

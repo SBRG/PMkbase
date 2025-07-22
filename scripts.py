@@ -70,7 +70,7 @@ def strain_summary():
     for specie in species:
         comp_strains = []
         #temp_summary = pd.read_csv(url_for('static',filename=specie+'/metadata/summary.csv'))
-        temp_summary = pd.read_csv('static/'+specie+'/metadata/summary.csv')
+        temp_summary = pd.read_csv('static/'+specie+'/metadata/updated_summary.csv')
         total_plates.append(temp_summary.shape[0])
         strains = temp_summary['Strain ID']
         mods = temp_summary['Metadata/Modifications']
@@ -102,7 +102,7 @@ def strain_summary_json():
 def plate_summary():
     concat_summary = pd.DataFrame()
     for specie in species:
-        temp_summary = pd.read_csv('static/'+specie+'/metadata/summary.csv')
+        temp_summary = pd.read_csv('static/'+specie+'/metadata/updated_summary.csv')
         concat_summary = pd.concat([concat_summary,temp_summary])
     plates = concat_summary['Plate'].unique()
 
@@ -397,7 +397,7 @@ def load_cluster_data(specie):
 
 
 def load_specie_metadata(specie):
-    specie_summary = pd.read_csv('static/'+specie+'/metadata/summary.csv',index_col='Plate IDs')
+    specie_summary = pd.read_csv('static/'+specie+'/metadata/updated_summary.csv',index_col='Plate IDs')
     samples = specie_summary.shape[0]
     strains = len(specie_summary['Strain'].unique())
     plates = specie_summary['Plate'].unique()
@@ -430,7 +430,7 @@ def combine_specie_summaries():
         strain_id = []
         mods = []
         sps = []
-        temp_summary = pd.read_csv('static/'+specie+'/metadata/summary.csv',index_col='Plate IDs')
+        temp_summary = pd.read_csv('static/'+specie+'/metadata/updated_summary.csv',index_col='Plate IDs')
         for i in range(0,temp_summary.shape[0]):
             strains.append(temp_summary.iloc[i,1]+'___'+temp_summary.iloc[i,2])
         strains = list(set(strains))
@@ -479,7 +479,7 @@ def get_plateid_from_strain(strain_list,plate):
     plateids = []
 
     for specie in species:
-        temp_summary = pd.read_csv('static/'+specie+'/metadata/summary.csv',index_col='Plate IDs')
+        temp_summary = pd.read_csv('static/'+specie+'/metadata/updated_summary.csv',index_col='Plate IDs')
         combined_summary = pd.concat([combined_summary,temp_summary])
 
     for i in range(0,len(strain_list),3):
@@ -551,7 +551,7 @@ def get_strain_names(strainlist):
 
 def get_tracking_growth_data(specie,plate,well):
     
-    all_strains = pd.read_csv('static/'+specie+'/metadata/summary.csv',index_col='Plate IDs')
+    all_strains = pd.read_csv('static/'+specie+'/metadata/updated_summary.csv',index_col='Plate IDs')
     all_strains = all_strains['Strain'].unique().tolist()
 
 
@@ -611,7 +611,7 @@ def get_tracking_growth_data(specie,plate,well):
 
 
 def calculate_specie_inter_cluster_mash_dist(specie):
-    summary = pd.read_csv('static/'+specie+'/metadata/summary.csv',index_col='Plate IDs')
+    summary = pd.read_csv('static/'+specie+'/metadata/updated_summary.csv',index_col='Plate IDs')
 
 
     names = [
