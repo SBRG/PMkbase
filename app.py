@@ -35,6 +35,19 @@ db.init_app(app)
 
 
 def ingest_data(specie):
+    """
+    Ingests growth curve data for a given species from a CSV file and adds it to the database.
+
+    Args:
+        specie (str): The species name.
+
+    Returns:
+        None
+
+    Side Effects:
+        Reads 'static/{specie}/data/plate_summary.csv'.
+        Adds GrowthData entries to the database.
+    """
     csv_path = f'static/{specie}/data/plate_summary.csv'
     growth_curves = pd.read_csv(csv_path)
     time_scale = list(np.arange(0,48.25,0.25))
@@ -56,6 +69,19 @@ def ingest_data(specie):
 
 
 def ingest_trait_data(specie):
+    """
+    Ingests trait data for a given species from a CSV file and adds it to the database.
+
+    Args:
+        specie (str): The species name.
+
+    Returns:
+        None
+
+    Side Effects:
+        Reads 'static/{specie}/data/growth_summary.csv'.
+        Adds TraitData entries to the database.
+    """
     csv_path = f'static/{specie}/data/growth_summary.csv'
     growth_calls = pd.read_csv(csv_path)
     
@@ -81,6 +107,19 @@ def ingest_trait_data(specie):
     db.session.commit()
 
 def ingest_kinetic_data(specie):
+    """
+    Ingests kinetic data for a given species from a CSV file and adds it to the database.
+
+    Args:
+        specie (str): The species name.
+
+    Returns:
+        None
+
+    Side Effects:
+        Reads 'static/{specie}/data/kinetic_summary.csv'.
+        Adds KineticData entries to the database.
+    """
     csv_path = f'static/{specie}/data/kinetic_summary.csv'
     kinetics = pd.read_csv(csv_path)
     for _, row in kinetics.iterrows():
@@ -112,7 +151,12 @@ def ingest_kinetic_data(specie):
 
 @app.route('/download/all_sequences')
 def download_all_sequences():
+    """
+    Downloads a zip file containing all sequence files.
 
+    Returns:
+        Response: Sends 'static/all_sequences.zip' as an attachment.
+    """
     zip_path = os.path.join('static', 'all_sequences.zip')
     
     return send_file(zip_path, as_attachment=True, download_name='all_sequences.zip')
@@ -121,7 +165,12 @@ def download_all_sequences():
 
 @app.route('/download/all_pmdata')
 def download_all_pmdata():
+    """
+    Downloads a zip file containing all phenotype microarray data.
 
+    Returns:
+        Response: Sends 'static/all_PM_data.zip' as an attachment.
+    """
     zip_path = os.path.join('static', 'all_PM_data.zip')
     
     return send_file(zip_path, as_attachment=True, download_name='allPMdata.zip')
@@ -129,7 +178,15 @@ def download_all_pmdata():
 
 @app.route('/download/all_specie_sequences')
 def download_all_specie_sequences():
+    """
+    Downloads a zip file containing all sequence files for a specific species.
 
+    Query Parameters:
+        specie (str): The species name.
+
+    Returns:
+        Response: Sends '{specie}/sequences.zip' as an attachment.
+    """
     specie=request.args.get('specie')
     
     # Define the path for the zip file
@@ -141,7 +198,15 @@ def download_all_specie_sequences():
 
 @app.route('/download/all_specie_pmdata')
 def download_all_specie_pmdata():
+    """
+    Downloads a zip file containing all PM data for a specific species.
 
+    Query Parameters:
+        specie (str): The species name.
+
+    Returns:
+        Response: Sends '{specie}/data.zip' as an attachment.
+    """
     specie=request.args.get('specie')
     
     # Define the path for the zip file
@@ -153,6 +218,23 @@ def download_all_specie_pmdata():
 
 @app.route('/download/mainstrain_specie_sequences')
 def download_mainstrain_specie_sequences():
+    """
+    Downloads the sequence file for a specific strain of a given species.
+
+    Query Parameters:
+        specie (str): The species name.
+        strain (str): The strain name.
+
+    Returns:
+        Response: Sends the sequence file (.fna) as an attachment.
+        404: If the file is not found.
+
+    Side Effects:
+        Reads files from the static directory.
+
+    Raises:
+        FileNotFoundError: If the sequence file does not exist.
+    """
 
     specie= request.args.get('specie')
     strain = request.args.get('strain')
@@ -169,6 +251,17 @@ def download_mainstrain_specie_sequences():
 
 @app.route('/download/mainstrain_specie_growthdata')
 def download_mainstrain_specie_growthdata():
+    """
+    Downloads growth summary data for a specific strain and plate of a species.
+
+    Query Parameters:
+        specie (str): The species name.
+        plateid (str): The plate ID.
+        strain (str): The strain name.
+
+    Returns:
+        Response: Sends filtered growth summary CSV as an attachment.
+    """
 
     specie= request.args.get('specie')
     plateid = request.args.get('plateid')
@@ -197,6 +290,17 @@ def download_mainstrain_specie_growthdata():
 
 @app.route('/download/mainstrain_specie_kineticdata')
 def download_mainstrain_specie_kineticdata():
+    """
+    Downloads kinetic summary data for a specific strain and plate of a species.
+
+    Query Parameters:
+        specie (str): The species name.
+        plateid (str): The plate ID.
+        strain (str): The strain name.
+
+    Returns:
+        Response: Sends filtered kinetic summary CSV as an attachment.
+    """
 
     specie= request.args.get('specie')
     plateid = request.args.get('plateid')
@@ -224,6 +328,17 @@ def download_mainstrain_specie_kineticdata():
 
 @app.route('/download/mainstrain_specie_rawdata')
 def download_mainstrain_specie_rawdata():
+    """
+    Downloads raw plate summary data for a specific strain and plate of a species.
+
+    Query Parameters:
+        specie (str): The species name.
+        plateid (str): The plate ID.
+        strain (str): The strain name.
+
+    Returns:
+        Response: Sends filtered plate summary CSV as an attachment.
+    """
 
     specie= request.args.get('specie')
     plateid = request.args.get('plateid')
@@ -252,19 +367,39 @@ def download_mainstrain_specie_rawdata():
 @app.route('/')
 @app.route('/index')
 def index():
+    """
+    Renders the main index page with trait summary data.
+
+    Returns:
+        Rendered HTML template 'index.html' with trait and category data.
+    """
     traits,categories = scripts.get_trait_summary()
 
     return render_template('index.html',series=traits,categories=categories)
 
 @app.route('/dashboard')
 def dashboard():
+    """
+    Renders the dashboard page.
+
+    Returns:
+        Rendered HTML template 'index.html'.
+    """
     return render_template('index.html')
 
 
 
 @app.route('/tree')
 def tree():
+    """
+    Renders the species tree page with summary statistics.
 
+    Query Parameters:
+        specie (str): The species name.
+
+    Returns:
+        Rendered HTML template 'tree.html' with tree and compound data.
+    """
     specie=request.args.get('specie')
     specie_summary = pd.read_csv('static/'+specie+'/metadata/summary.csv',index_col='Plate IDs')
     plates = specie_summary['Plate'].unique()
@@ -283,6 +418,15 @@ def tree():
 
 @app.route('/tree_json')
 def get_tree():
+    """
+    Returns the species tree data in JSON format, annotated with cluster information.
+
+    Query Parameters:
+        specie (str): The species name.
+
+    Returns:
+        JSON: Tree data with cluster annotations.
+    """
     specie=request.args.get('specie')
     with open("static/"+specie+"/tree.json", "r") as f:
         tree_data = json.load(f)
@@ -304,6 +448,17 @@ def get_tree():
 
 @app.route('/track_tree_json',methods=['GET'])
 def get_track_tree():
+    """
+    Returns tracked tree data and phenotype/kinetic statistics for a given plate and well.
+
+    Query Parameters:
+        specie (str): The species name.
+        plate (str): The plate name (default 'PM01').
+        well (str): The well name (default 'H12').
+
+    Returns:
+        JSON: Tree data, phenotype mash statistics, kinetic means/errors, and strain lists.
+    """
     from scipy.stats import ttest_ind
 
     specie=request.args.get('specie')
@@ -379,6 +534,17 @@ def get_track_tree():
 
 @app.route('/signal')
 def signal():
+    """
+    Renders the signal page showing growth curves for a given plate, species, and well.
+
+    Query Parameters:
+        pltid (str): Plate ID.
+        strn (str): Species name.
+        well (str): Well name.
+
+    Returns:
+        Rendered HTML template 'signal.html' with growth data and time scale.
+    """
     plateid = request.args.get('pltid')
     specie = request.args.get('strn')
     well = request.args.get('well')
@@ -395,17 +561,40 @@ def signal():
 
 @app.route('/about',methods=['GET', 'POST'])
 def about():
+    """
+    Renders the about page with control and growth well distributions.
+
+    Returns:
+        Rendered HTML template 'about.html' with control and growth well data.
+    """
     control_wells,growth_wells=scripts.get_control_well_dist('pputida')
     #control_wells = random.sample(control_wells, 100)
     return render_template('about.html',control_wells = control_wells,growth_wells=growth_wells)
 
 @app.route('/plates')
 def plates():
+    """
+    Renders the plates page.
 
+    Returns:
+        Rendered HTML template 'plates.html'.
+    """
     return render_template('plates.html')
 
 @app.route('/ticket' ,methods=['GET', 'POST'])
 def ticket():
+    """
+    Handles user support ticket submissions.
+
+    POST:
+        Receives name, email, and message from form and sends an email.
+
+    GET:
+        Renders the ticket submission form.
+
+    Returns:
+        Success message or rendered HTML template 'ticket.html'.
+    """
     if request.method == 'POST':
         name = request.form['name']
         email = request.form['email']
@@ -419,7 +608,18 @@ def ticket():
 
 @app.route('/explore',methods=['GET', 'POST'])
 def explore():
+    """
+    Renders the comparative analysis page for selected strains and compounds.
 
+    POST:
+        Processes selected strains and compound, returns comparative analysis.
+
+    GET:
+        Renders the explore page with available entries and options.
+
+    Returns:
+        Rendered HTML template 'comparative_analysis.html' or 'explore.html'.
+    """
     if request.method == 'POST':
         # selected_entries = request.form.getlist('selected_entries')
         chosen_option = request.form.get('selected_option')
@@ -438,6 +638,15 @@ def explore():
 
 @app.route('/plate_descriptions/json', methods=['GET'])
 def plate_descriptions_json():
+    """
+    Returns plate descriptions in JSON format.
+
+    Query Parameters:
+        strain (str): Strain name.
+
+    Returns:
+        JSON: Plate description data.
+    """
     strain = request.args.get('strain')
     plate_desc = pd.read_csv('./static/'+'plate_desc/platedesc.csv')
 
@@ -467,6 +676,15 @@ def plate_descriptions_json():
 
 @app.route('/species', methods=['GET'])
 def species():
+    """
+    Renders the species page with metadata and summary information.
+
+    Query Parameters:
+        specie (str): Species name.
+
+    Returns:
+        Rendered HTML template 'species.html' with metadata.
+    """
     specie = request.args.get('specie')
     specie_name = specie[0].upper() +'. '+specie[1:]
     samples,strains,available_plates,clusters,plates = scripts.load_specie_metadata(specie)
@@ -476,6 +694,15 @@ def species():
 
 # Define a sorting key function
 def sort_key(compound):
+    """
+    Sorting key for compounds based on well order.
+
+    Args:
+        compound (str): Compound string in format 'Well: Compound'.
+
+    Returns:
+        int: Index of the well in plate order.
+    """
     wells = []
     for letter in range(ord('A'), ord('H') + 1):
         for num in range(1, 13):
@@ -486,6 +713,21 @@ def sort_key(compound):
 
 @app.route('/mainstraindata', methods=['GET'])
 def mainstraindata():
+    """
+    Renders the main strain data page for a given plate and strain.
+
+    Query Parameters:
+        pltid (str): Plate ID.
+        strn (str): Species name.
+        plate (str): Plate name.
+        strid (str): Strain ID.
+        metadata (str): Metadata.
+        media (str): Media.
+        strain (str): Strain name.
+
+    Returns:
+        Rendered HTML template 'mainstraindata.html' with kinetic and growth data.
+    """
     plateid = request.args.get('pltid')
     specie = request.args.get('strn')
     plate = request.args.get('plate')
@@ -524,6 +766,17 @@ def mainstraindata():
 
 @app.route('/update_chart', methods=['GET'])
 def update_chart():
+    """
+    Returns updated kinetic chart data for a given plate, species, and parameter.
+
+    Query Parameters:
+        pltid (str): Plate ID.
+        strn (str): Species name.
+        param (str): Kinetic parameter.
+
+    Returns:
+        JSON: Chart categories, mean data, error data, and parameter name.
+    """
     plateid = request.args.get('pltid')
     specie = request.args.get('strn')
     param = request.args.get('param')
@@ -532,7 +785,20 @@ def update_chart():
 
 @app.route('/update_tracking_kinetics_chart', methods=['POST'])
 def update_tracking_kinetics_chart():
+    """
+    Returns updated tracking kinetics chart data for selected strains and parameter.
 
+    POST Data:
+        growth_strains (list): List of strains with growth.
+        no_growth_strains (list): List of strains without growth.
+        param (str): Kinetic parameter.
+        specie (str): Species name.
+        plate (str): Plate name.
+        well (str): Well name.
+
+    Returns:
+        JSON: Chart categories, mean data, error data, and parameter name.
+    """
     data = request.get_json()
     growth_strains = data.get('growth_strains')
     no_growth_strains = data.get('no_growth_strains')
@@ -547,7 +813,17 @@ def update_tracking_kinetics_chart():
 
 @app.route('/update_growth_curve', methods=['GET'])
 def update_growth_curve():
+    """
+    Returns updated growth curve data for a given plate, species, and compound.
 
+    Query Parameters:
+        pltid (str): Plate ID.
+        strn (str): Species name.
+        compound (str): Compound string.
+
+    Returns:
+        JSON: Growth curve data.
+    """
     plateid = request.args.get('pltid')
     specie = request.args.get('strn')
     compound = request.args.get('compound')
@@ -563,7 +839,12 @@ def update_growth_curve():
 
 @app.route('/straindata', methods=['GET'])
 def straindata():
+    """
+    Renders the strain data heatmap page for a specific strain.
 
+    Returns:
+        Rendered HTML template 'straindata.html' with heatmap and compound data.
+    """
     growth_calls,well_char,well_id,compound_dict = scripts.get_strain_data('ECP120')
     chart= {'type': 'heatmap','marginTop': 40,'marginBottom': 80,'plotBorderWidth': 1}
     title= {'text': ''}
@@ -606,8 +887,16 @@ def straindata():
 
 @app.route('/strain_kinetics/json', methods=['GET'])
 def strain_kinetics_json():
-    #plateid = 'ECP120'
-    #strain = request.args.get('strain')
+    """
+    Returns kinetic parameters for a given plate and strain in JSON format.
+
+    Query Parameters:
+        spec (str): Strain name.
+        plate (str): Plate ID.
+
+    Returns:
+        JSON: Kinetic parameter data.
+    """
     strain = request.args.get('spec')
     plateid = request.args.get('plate')
     out2 = scripts.get_kinetic_parameters(plateid,strain)
@@ -617,8 +906,16 @@ def strain_kinetics_json():
 
 @app.route('/strain_growth/json', methods=['GET'])
 def strain_growth_json():
-    #plateid = 'ECP120'
-    #strain = request.args.get('strain')
+    """
+    Returns growth table for a given plate and strain in JSON format.
+
+    Query Parameters:
+        spec (str): Strain name.
+        plate (str): Plate ID.
+
+    Returns:
+        JSON: Growth table data.
+    """
     strain = request.args.get('spec')
     plateid = request.args.get('plate')
     out2 = scripts.get_growth_table(plateid,strain)
@@ -627,6 +924,17 @@ def strain_growth_json():
 
 @app.route('/get_growth_curves/json',methods=['POST'])
 def get_growth_curves():
+    """
+    Returns growth curves for a given well, plate, and species.
+
+    POST Data:
+        well (str): Well name.
+        plateid (str): Plate ID.
+        specie (str): Species name.
+
+    Returns:
+        JSON: Chart data for growth curves.
+    """
     well = request.form['well']
     plateid = request.form['plateid']
     specie = request.form['specie']
@@ -636,6 +944,15 @@ def get_growth_curves():
 
 @app.route('/strains/json', methods=['GET'])
 def strains_json():
+    """
+    Returns strain metadata in JSON format.
+
+    Query Parameters:
+        strain (str): Strain name.
+
+    Returns:
+        JSON: Strain metadata.
+    """
     strain = request.args.get('strain')
     strain_data = pd.read_csv('./static/'+strain+'/metadata/updated_summary.csv')
 
@@ -684,6 +1001,15 @@ def strains_json():
 
 @app.route('/projects/json', methods=['GET'])
 def projects():
+    """
+    Returns project metadata for a given strain in JSON format.
+
+    Query Parameters:
+        strain (str): Strain name.
+
+    Returns:
+        JSON: Project metadata.
+    """
     strain = request.args.get('strain')
     project_data = pd.read_csv('./static/'+strain+'/metadata/project_summary.csv')
     out2 = []
@@ -705,7 +1031,12 @@ def projects():
 
 @app.route('/dashboard/strains', methods=['GET'])
 def dashboard_strains():
+    """
+    Returns dashboard summary of strains per species in JSON format.
 
+    Returns:
+        JSON: Species and number of strains.
+    """
     total_strains = strain.strain_summary()
     strain = request.args.get('strain')
     strain_data = pd.read_csv('./static/'+strain+'/metadata/summary.csv')
@@ -727,6 +1058,18 @@ def dashboard_strains():
 
 @app.route('/compound_summary')
 def compound_summary():
+    """
+    Renders the compound summary page for a given plate, well, and compound.
+
+    Query Parameters:
+        plate (str): Plate name.
+        well (str): Well name.
+        compound (str): Compound name.
+        desc (str): Description.
+
+    Returns:
+        Rendered HTML template 'compound_summary.html'.
+    """
     plate = request.args.get('plate')
     well = request.args.get('well')
     compound = request.args.get('compound')
@@ -735,11 +1078,18 @@ def compound_summary():
 
 @app.route('/compound_summary_growth/json', methods=['GET'])
 def compound_summary_growth_json():
-    #plateid = 'ECP120'
-    #strain = request.args.get('strain')
+    """
+    Returns growth summary for a compound in JSON format.
+
+    Query Parameters:
+        plate (str): Plate name.
+        well (str): Well name.
+
+    Returns:
+        JSON: Growth summary and species percentages.
+    """
     plate = request.args.get('plate')
     well = request.args.get('well')
-    #compound = request.args.get('compound')
 
     growth_data_entries = TraitData.query.filter_by(plate=plate,well=well,growth=1).all()
     out2 = [[entry.strain,entry.metadata_mods,entry.specie[0].upper()+'. '+entry.specie[1:],entry.media,
@@ -774,11 +1124,18 @@ def compound_summary_growth_json():
 
 @app.route('/compound_summary_nogrowth/json', methods=['GET'])
 def compound_summary_nogrowth_json():
-    #plateid = 'ECP120'
-    #strain = request.args.get('strain')
+    """
+    Returns no-growth summary for a compound in JSON format.
+
+    Query Parameters:
+        plate (str): Plate name.
+        well (str): Well name.
+
+    Returns:
+        JSON: No-growth summary and species percentages.
+    """
     plate = request.args.get('plate')
     well = request.args.get('well')
-    #compound = request.args.get('compound')
 
     no_growth_data_entries = TraitData.query.filter_by(plate=plate,well=well,growth=0).all()
     growth_data_entries = TraitData.query.filter_by(plate=plate,well=well,growth=1).all()
@@ -821,15 +1178,40 @@ required_columns = [
 ]
 
 def allowed_file(filename):
+    """
+    Checks if the uploaded filename is allowed (CSV or XLSX).
+
+    Args:
+        filename (str): The filename to check.
+
+    Returns:
+        bool: True if allowed, False otherwise.
+    """
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'csv', 'xlsx'}
 
 @app.route('/upload')
 def upload():
+    """
+    Renders the upload page for data files.
+
+    Returns:
+        Rendered HTML template 'upload.html'.
+    """
     return render_template('upload.html')
 
 
 @app.route('/upload_file', methods=['POST'])
 def upload_file():
+    """
+    Handles file uploads, validates columns and missing data, processes and saves datasets.
+
+    POST:
+        Receives files via 'file[]'.
+
+    Returns:
+        Rendered HTML template 'processed_uploads.html' on success.
+        Error message if missing columns or null entries.
+    """
     if 'file[]' not in request.files:
         return 'No file part', 400
     files = request.files.getlist('file[]')
@@ -907,6 +1289,12 @@ def upload_file():
 
 @app.route('/delete_session_data')
 def delete_session_data():
+    """
+    Deletes cached session data for the current user.
+
+    Returns:
+        str: Success message.
+    """
     unique_key = session.get('unique_key')
     if unique_key:
         static_dir = os.path.join(app.root_path, 'static','cache',unique_key)
@@ -918,12 +1306,24 @@ def delete_session_data():
 
 @app.before_request
 def session_management():
+    """
+    Sets session to be permanent and configures session lifetime.
+
+    Returns:
+        None
+    """
     session.permanent = True
     app.permanent_session_lifetime = timedelta(minutes=30)  # Adjust the lifetime as needed
 
 
 @app.route('/upload_example/json', methods=['GET'])
 def upload_example_json():
+    """
+    Returns example upload data in JSON format.
+
+    Returns:
+        JSON: Example upload data.
+    """
     
     out2 = scripts.get_example_upload_data()
 
@@ -931,6 +1331,12 @@ def upload_example_json():
 
 @app.route('/summary_data_upload', methods=['GET'])
 def summary_data_upload():
+    """
+    Returns summary table for uploaded data in JSON format.
+
+    Returns:
+        JSON: Summary table data.
+    """
     key = session.get('unique_key', [])
     out2 = utils.get_uploaded_summary_table(key)
     return jsonify(data=out2)
@@ -939,7 +1345,20 @@ def summary_data_upload():
 
 @app.route('/uploaded_data_mainstraindata', methods=['GET'])
 def uploaded_data_mainstraindata():
+    """
+    Renders the main strain data page for uploaded datasets.
 
+    Query Parameters:
+        plateids (str): Plate IDs.
+        strain (str): Strain name.
+        plate (str): Plate name.
+        specie (str): Species name.
+        media (str): Media.
+        replicates (str): Replicate count.
+
+    Returns:
+        Rendered HTML template 'uploaded_data_mainstraindata.html'.
+    """
     plateids = request.args.get('plateids')
     strain = request.args.get('strain')
     plate = request.args.get('plate')
@@ -965,7 +1384,15 @@ def uploaded_data_mainstraindata():
 
 @app.route('/uploaded_strain_growth/json', methods=['GET'])
 def uploaded_strain_growth_json():
+    """
+    Returns growth table for uploaded datasets in JSON format.
 
+    Query Parameters:
+        plateids (str): Plate IDs.
+
+    Returns:
+        JSON: Growth table data.
+    """
     key = session.get('unique_key', [])
     if not key:
         return jsonify(data=[]), 400  # If key is not found in session, return empty data with bad request
@@ -981,7 +1408,16 @@ def uploaded_strain_growth_json():
 
 @app.route('/update_kinetic_chart_uploaded_data', methods=['GET'])
 def update_kinetic_chart_uploaded_data():
+    """
+    Returns updated kinetic chart data for uploaded datasets.
 
+    Query Parameters:
+        param (str): Kinetic parameter.
+        plateids (str): Plate IDs.
+
+    Returns:
+        JSON: Chart categories, mean data, and parameter name.
+    """
     param = request.args.get('param')
     plateids = request.args.get('plateids')
     key = session.get('unique_key', [])
@@ -990,13 +1426,21 @@ def update_kinetic_chart_uploaded_data():
     
     categories_list, mean_data,param_name = utils.get_kinetic_parameters_for_sample(plateids,key,param)
     
-    return jsonify(categories=categories_list, mean_data=mean_data,param_name=param_name)
-
+    return jsonify(categories=categories_list, mean_data=mean_data,param_name=param)
 
 
 @app.route('/update_uploaded_sample_growth_curve', methods=['GET'])
 def update_uploaded_sample_growth_curve():
+    """
+    Returns updated growth curve data for uploaded samples.
 
+    Query Parameters:
+        compound (str): Compound string.
+        plateids (str): Plate IDs.
+
+    Returns:
+        JSON: Growth curve data.
+    """
     compound = request.args.get('compound')
     well = compound.split(':')[0]
     plateids = request.args.get('plateids')
@@ -1012,6 +1456,12 @@ def update_uploaded_sample_growth_curve():
 
 @app.route('/download_all_processed_upload_data', methods=['GET'])
 def download_all_processed_upload_data():
+    """
+    Downloads all processed upload data as a zip file.
+
+    Returns:
+        Response: Sends zip file as an attachment.
+    """
     key = session.get('unique_key', [])
     if not key:
         return jsonify(data=[]), 400
@@ -1034,7 +1484,17 @@ def download_all_processed_upload_data():
 
 @app.route('/download_sample_processed_upload_data', methods=['GET'])
 def download_sample_processed_upload_data():
+    """
+    Downloads processed upload data for a specific sample as a zip file.
 
+    Query Parameters:
+        plateids (str): Plate IDs.
+        strain (str): Strain name.
+        plate (str): Plate name.
+
+    Returns:
+        Response: Sends zip file as an attachment.
+    """
     plateids = request.args.get('plateids')
     strain = request.args.get('strain')
     plate = request.args.get('plate')

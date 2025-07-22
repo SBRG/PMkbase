@@ -1,127 +1,139 @@
+<!--
+    signal.html
+
+    Description:
+        Renders the growth curve visualization page for PMkbase.
+        Displays interactive Highcharts line chart of measured signals over time for selected samples.
+        Uses Highcharts for charting and custom CSS for layout.
+
+    Sections:
+        - Head: Loads Highcharts scripts and custom CSS for chart/table styling.
+        - Body: Chart container for growth curves.
+        - Script: Highcharts chart configuration using data from Flask context.
+        - Jinja Blocks: 'head', 'body', and 'script' for child templates.
+-->
+
 {% extends 'base.html' %}
 
 {% block head %}
+    <!--
+        Head Block:
+        - Loads Highcharts libraries for charting.
+        - Defines custom CSS for chart and table layout.
+    -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/series-label.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <style>
+        .highcharts-figure,
+        .highcharts-data-table table {
+            min-width: 360px;
+            max-width: 800px;
+            margin: 1em auto;
+        }
 
-<script src="https://code.highcharts.com/highcharts.js"></script>
-<script src="https://code.highcharts.com/modules/series-label.js"></script>
-<script src="https://code.highcharts.com/modules/exporting.js"></script>
-<script src="https://code.highcharts.com/modules/export-data.js"></script>
-<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+        .highcharts-data-table table {
+            font-family: Verdana, sans-serif;
+            border-collapse: collapse;
+            border: 1px solid #ebebeb;
+            margin: 10px auto;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+        }
 
-<style>
-    .highcharts-figure,
-.highcharts-data-table table {
-    min-width: 360px;
-    max-width: 800px;
-    margin: 1em auto;
-}
+        .highcharts-data-table caption {
+            padding: 1em 0;
+            font-size: 1.2em;
+            color: #555;
+        }
 
-.highcharts-data-table table {
-    font-family: Verdana, sans-serif;
-    border-collapse: collapse;
-    border: 1px solid #ebebeb;
-    margin: 10px auto;
-    text-align: center;
-    width: 100%;
-    max-width: 500px;
-}
+        .highcharts-data-table th {
+            font-weight: 600;
+            padding: 0.5em;
+        }
 
-.highcharts-data-table caption {
-    padding: 1em 0;
-    font-size: 1.2em;
-    color: #555;
-}
+        .highcharts-data-table td,
+        .highcharts-data-table th,
+        .highcharts-data-table caption {
+            padding: 0.5em;
+        }
 
-.highcharts-data-table th {
-    font-weight: 600;
-    padding: 0.5em;
-}
+        .highcharts-data-table thead tr,
+        .highcharts-data-table tr:nth-child(even) {
+            background: #f8f8f8;
+        }
 
-.highcharts-data-table td,
-.highcharts-data-table th,
-.highcharts-data-table caption {
-    padding: 0.5em;
-}
-
-.highcharts-data-table thead tr,
-.highcharts-data-table tr:nth-child(even) {
-    background: #f8f8f8;
-}
-
-.highcharts-data-table tr:hover {
-    background: #f1f7ff;
-}
-</style>
-
+        .highcharts-data-table tr:hover {
+            background: #f1f7ff;
+        }
+    </style>
 {% endblock %}
-
 
 {% block body %}
-
-<figure class="highcharts-figure">
-    <div id="container"></div>
-
+    <!--
+        Body Block:
+        - Chart container for growth curves.
+    -->
+    <figure class="highcharts-figure">
+        <div id="container"></div>
     </figure>
-
-
 {% endblock %}
 
-{% block script%}
+{% block script %}
+    <!--
+        Script Block:
+        - Configures Highcharts line chart for growth curves.
+        - Uses growth_data and time_series from Flask context.
+    -->
+    <script>
+        var growth_data = {{ growth_data|safe }};
+        var time_series = {{ time_series|safe }};
 
-
-
-<script>
-
-var growth_data = {{ growth_data|safe}}
-var time_series = {{ time_series|safe}}
-
-Highcharts.chart('container', {
-
-title: {
-    text: 'Growth Curves',
-    align: 'left'
-},
-
-yAxis: {
-    title: {
-        text: 'Signal'
-    }
-},
-
-xAxis:{categories:time_series,title:{text:'Time (hrs)'}},
-
-legend: {
-    layout: 'vertical',
-    align: 'right',
-    verticalAlign: 'middle'
-},
-
-plotOptions: {
-    series: {
-        label: {
-            connectorAllowed: false
-        },
-        pointStart: 2010
-    }
-},
-
-series: growth_data,
-
-responsive: {
-    rules: [{
-        condition: {
-            maxWidth: 500
-        },
-        chartOptions: {
+        Highcharts.chart('container', {
+            title: {
+                text: 'Growth Curves',
+                align: 'left'
+            },
+            yAxis: {
+                title: {
+                    text: 'Signal'
+                }
+            },
+            xAxis: {
+                categories: time_series,
+                title: { text: 'Time (hrs)' }
+            },
             legend: {
-                layout: 'horizontal',
-                align: 'center',
-                verticalAlign: 'bottom'
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle'
+            },
+            plotOptions: {
+                series: {
+                    label: {
+                        connectorAllowed: false
+                    },
+                    pointStart: 2010
+                }
+            },
+            series: growth_data,
+            responsive: {
+                rules: [{
+                    condition: {
+                        maxWidth: 500
+                    },
+                    chartOptions: {
+                        legend: {
+                            layout: 'horizontal',
+                            align: 'center',
+                            verticalAlign: 'bottom'
+                        }
+                    }
+                }]
             }
-        }
-    }]
-}
-
-});
-</script>
-{%endblock%}
+        });
+    </script>
+{% endblock %}
