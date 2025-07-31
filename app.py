@@ -19,9 +19,10 @@ from datetime import timedelta
 import shutil
 import zipfile
 import io
+import logging
 
-
-
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__,template_folder='templates',static_url_path='/static')
 app.secret_key = 'sbrg_omnilog'
@@ -1535,6 +1536,102 @@ def download_sample_processed_upload_data():
     )
 
     return response
+
+#### Interop-DB Queries
+def _parse_ids(data: dict, key: str):
+    """Extract a list of IDs from *data* under *key*.
+
+    Raises:
+        ValueError: if the key is missing or the value is not a list.
+    """
+    if key not in data:
+        raise ValueError(f"Missing required key '{key}'.")
+    if not isinstance(data[key], list):
+        raise ValueError(f"'{key}' must be a list – got {type(data[key]).__name__} instead.")
+    return data[key]
+
+def _row_to_dict(row):
+    """Generic SQLAlchemy → dict (all simple columns)."""
+    return {c.name: getattr(row, c.name) for c in row.__table__.columns}
+
+def _growth_row_to_dict(row):
+    """GrowthData → dict, making signal_data JSON-safe."""
+    d = _row_to_dict(row)
+    if isinstance(d.get("signal_data"), list):
+        d["signal_data"] = [float(v) for v in d["signal_data"]]
+    return d
+
+@app.route("/interop-query/query_by_strain", methods=["POST"])
+def query_by_strain():
+    """
+    POST body: {"ids": ["S1", "S2", ...]}
+    Returns, for each strain ID, all KineticData and TraitData rows
+    whose (strainid, plate) match that strain and any plate used
+    by that strain.  The plate list is gathered once from KineticData.
+    """
+    logger.info("query by strain")
+
+    try:
+        payload = request.get_json()
+        ids = _parse_ids(payload, "ids")
+
+        def _row_to_dict(row):
+            return {c.name: getattr(row, c.name) for c in row.__table__.columns}
+
+        entries = []
+
+        unique_plate_ids = set()
+        for strain_id in ids:
+            plate_ids = {p for (p,) in (
+                db.session.query(KineticData.plateid)
+                          .filter_by(strainid=strain_id)
+                          .distinct()
+            )}
+
+            unique_plate_ids |= plate_ids
+
+            # If a strain never occurs, return empty lists instead of error.
+            if not plate_ids:
+                entries.append({
+                    "strainid": strain_id,
+                    "kinethicdata": [],
+                    "traitdata":   []
+                })
+                continue
+
+            kin_rows = (KineticData.query
+                        .filter_by(strainid=strain_id)
+                        .filter(KineticData.plateid.in_(plate_ids))
+                        .all())
+
+            trait_rows = (TraitData.query
+                          .filter_by(strainid=strain_id)
+                          .filter(TraitData.plateid.in_(plate_ids))
+                          .all())
+
+            entries.append({
+                "strainid": strain_id,
+                "kinethicdata": [_row_to_dict(r) for r in kin_rows],
+                "traitdata":    [_row_to_dict(r) for r in trait_rows],
+            })
+
+        if unique_plate_ids:
+            growth_rows = (GrowthData.query
+                           .filter(GrowthData.plateid.in_(unique_plate_ids))
+                           .all())
+            plates_payload = [_growth_row_to_dict(g) for g in growth_rows]
+        else:
+            plates_payload = []
+
+        return jsonify({
+            "entries": entries,
+            "plates":   plates_payload
+        }), 200
+
+    except Exception as exc:
+        logger.exception("Error in query_by_strain")
+        return jsonify({"error": str(exc)}), 400
+
 
 if __name__ == "__main__":
     with app.app_context():
