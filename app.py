@@ -1561,7 +1561,7 @@ def _growth_row_to_dict(row):
         d["signal_data"] = [float(v) for v in d["signal_data"]]
     return d
 
-@app.route("/interop-query/query_by_strain", methods=["POST"])
+@app.route("/interop-query/query-by-strain", methods=["POST"])
 def query_by_strain():
     """
     POST body: {"ids": ["S1", "S2", ...]}
