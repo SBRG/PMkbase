@@ -1,4 +1,5 @@
 from flask import Flask, render_template, url_for, jsonify, send_file, Response, session
+from flask_cors import CORS, cross_origin
 from flask import request
 import pandas as pd
 import scripts
@@ -25,6 +26,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__,template_folder='templates',static_url_path='/static')
+cors = CORS(app) # allow CORS for all domains on all routes.
+app.config['CORS_HEADERS'] = 'Content-Type'
+
 app.secret_key = 'sbrg_omnilog'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///growth_data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -1562,6 +1566,7 @@ def _growth_row_to_dict(row):
     return d
 
 @app.route("/interop-query/query-by-strain", methods=["POST"])
+@cross_origin()
 def query_by_strain():
     """
     POST body: {"ids": ["S1", "S2", ...]}
