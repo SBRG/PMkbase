@@ -26,7 +26,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__,template_folder='templates',static_url_path='/static')
-cors = CORS(app) # allow CORS for all domains on all routes.
+CORS(app, resources={r"/*": {"origins": "*"}})
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 app.secret_key = 'sbrg_omnilog'
