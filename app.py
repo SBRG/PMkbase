@@ -1638,7 +1638,7 @@ def query_by_strain():
         return jsonify({"error": str(exc)}), 400
 
 
-@app.route("/strains", methods=["GET"])
+@app.route("/interop-query/strains", methods=["GET"])
 @cross_origin()
 def get_all_strains():
     """
