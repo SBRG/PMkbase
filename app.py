@@ -1638,6 +1638,27 @@ def query_by_strain():
         return jsonify({"error": str(exc)}), 400
 
 
+@app.route("/interop-query/strains", methods=["GET"])
+@cross_origin()
+def get_all_strains():
+    """
+    GET /strains
+    Returns a list of all unique strain IDs from the KineticData table.
+    """
+    logger.info("get all strains")
+    
+    try:
+        strain_ids = db.session.query(KineticData.strainid).distinct().all()
+        
+        strains = [strain_id for (strain_id,) in strain_ids]
+
+        return jsonify({"strains": strains}), 200
+
+    except Exception as exc:
+        logger.exception("Error in get_all_strains")
+        return jsonify({"error": str(exc)}), 400
+    
+
 if __name__ == "__main__":
     with app.app_context():
          #db.drop_all()
