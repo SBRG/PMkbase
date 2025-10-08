@@ -1651,9 +1651,9 @@ def get_all_strains():
         strain_ids = db.session.query(KineticData.strainid).distinct().all()
         
         strains = [strain_id for (strain_id,) in strain_ids]
-        
-        return jsonify(strains), 200
-        
+
+        return jsonify({"strains": strains}), 200
+
     except Exception as exc:
         logger.exception("Error in get_all_strains")
         return jsonify({"error": str(exc)}), 400
