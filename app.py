@@ -18,6 +18,7 @@ import utils
 import uuid
 from datetime import timedelta
 import shutil
+from urllib.parse import urlencode
 import zipfile
 import io
 import logging
@@ -1565,6 +1566,34 @@ def _growth_row_to_dict(row):
         d["signal_data"] = [float(v) for v in d["signal_data"]]
     return d
 
+def _build_strain_urls(strain_id):
+    """Build a list of /mainstraindata URLs for every plate belonging to a strain."""
+    rows = (db.session.query(
+                KineticData.plateid,
+                KineticData.specie,
+                KineticData.plate,
+                KineticData.media,
+                KineticData.strain,
+                KineticData.metadata_mods,
+            )
+            .filter_by(strainid=strain_id)
+            .distinct()
+            .all())
+
+    urls = []
+    for r in rows:
+        params = urlencode({
+            "pltid":    r.plateid,
+            "strn":     r.specie,
+            "plate":    r.plate,
+            "media":    r.media or "",
+            "strid":    strain_id,
+            "metadata": r.metadata_mods or "",
+            "strain":   r.strain or "",
+        })
+        urls.append(f"/mainstraindata?{params}")
+    return urls
+
 @app.route("/interop-query/query-by-strain", methods=["POST"])
 @cross_origin()
 def query_by_strain():
@@ -1599,6 +1628,7 @@ def query_by_strain():
             if not plate_ids:
                 entries.append({
                     "strainid": strain_id,
+                    "urls":     [],
                     "kinethicdata": [],
                     "traitdata":   []
                 })
@@ -1616,6 +1646,7 @@ def query_by_strain():
 
             entries.append({
                 "strainid": strain_id,
+                "urls":     _build_strain_urls(strain_id),
                 "kinethicdata": [_row_to_dict(r) for r in kin_rows],
                 "traitdata":    [_row_to_dict(r) for r in trait_rows],
             })
@@ -1649,8 +1680,11 @@ def get_all_strains():
     
     try:
         strain_ids = db.session.query(KineticData.strainid).distinct().all()
-        
-        strains = [strain_id for (strain_id,) in strain_ids]
+
+        strains = [
+            {"strain": strain_id, "urls": _build_strain_urls(strain_id)}
+            for (strain_id,) in strain_ids
+        ]
 
         return jsonify({"strains": strains}), 200
 
