@@ -1559,12 +1559,6 @@ def _row_to_dict(row):
     """Generic SQLAlchemy → dict (all simple columns)."""
     return {c.name: getattr(row, c.name) for c in row.__table__.columns}
 
-def _growth_row_to_dict(row):
-    """GrowthData → dict, making signal_data JSON-safe."""
-    d = _row_to_dict(row)
-    if isinstance(d.get("signal_data"), list):
-        d["signal_data"] = [float(v) for v in d["signal_data"]]
-    return d
 
 def _build_strain_entries(strain_name):
     """Return a flat list of dicts — one per (strain, plate) combo — with full params and url."""
@@ -1606,10 +1600,12 @@ def _build_strain_entries(strain_name):
 @cross_origin()
 def query_by_strain():
     """
-    POST body: {"ids": ["S1", "S2", ...]}
-    Returns, for each strain ID, all KineticData and TraitData rows
-    whose (strainid, plate) match that strain and any plate used
-    by that strain.  The plate list is gathered once from KineticData.
+    POST body: {"ids": ["strainA", "strainB", ...]}
+    Returns, for each strain name, all KineticData and TraitData rows
+    grouped by experiment (plateid). Each entry includes the
+    mainstraindata URL for that experiment.
+    If a strain has no data, a single entry with url=None and empty
+    lists is returned.
     """
     logger.info("query by strain")
 
@@ -1617,44 +1613,34 @@ def query_by_strain():
         payload = request.get_json()
         ids = _parse_ids(payload, "ids")
 
-        def _row_to_dict(row):
-            return {c.name: getattr(row, c.name) for c in row.__table__.columns}
-
         entries = []
 
         for strain_name in ids:
-            plate_ids = (
-                db.session.query(KineticData.plateid)
-                          .filter_by(strain=strain_name)
-                          .distinct()
-                          .all()
-            )
+            url_entries = _build_strain_entries(strain_name)
 
-            if not plate_ids:
+            if not url_entries:
+                entries.append({
+                    "url":          None,
+                    "strain":       strain_name,
+                    "plateid":      None,
+                    "kinethicdata": [],
+                    "traitdata":    [],
+                })
                 continue
 
-            # Build URL lookup for this strain
-            url_entries = _build_strain_entries(strain_name)
-            url_map = {e["plateid"]: e["url"] for e in url_entries}
-
-            for (plate_id,) in plate_ids:
+            for ue in url_entries:
                 kin_rows = (KineticData.query
-                            .filter_by(strain=strain_name, plateid=plate_id)
+                            .filter_by(strain=strain_name, plateid=ue["plateid"])
                             .all())
 
                 trait_rows = (TraitData.query
-                              .filter_by(strain=strain_name, plateid=plate_id)
+                              .filter_by(strain=strain_name, plateid=ue["plateid"])
                               .all())
 
-                first = kin_rows[0] if kin_rows else None
                 entries.append({
-                    "url":          url_map.get(plate_id, ""),
-                    "plateid":      plate_id,
-                    "strain":       strain_name,
-                    "plate":        first.plate if first else "",
-                    "specie":       first.specie if first else "",
-                    "media":        first.media if first else "",
-                    "metadata":     first.metadata_mods if first else "",
+                    "strain":       ue["strain"],
+                    "plateid":      ue["plateid"],
+                    "url":          ue["url"],
                     "kinethicdata": [_row_to_dict(r) for r in kin_rows],
                     "traitdata":    [_row_to_dict(r) for r in trait_rows],
                 })
