@@ -1566,8 +1566,8 @@ def _growth_row_to_dict(row):
         d["signal_data"] = [float(v) for v in d["signal_data"]]
     return d
 
-def _build_strain_urls(strain_id):
-    """Build a list of /mainstraindata URLs for every plate belonging to a strain."""
+def _build_strain_entries(strain_id):
+    """Return a flat list of dicts — one per (strain, plate) combo — with full params and url."""
     rows = (db.session.query(
                 KineticData.plateid,
                 KineticData.specie,
@@ -1580,7 +1580,7 @@ def _build_strain_urls(strain_id):
             .distinct()
             .all())
 
-    urls = []
+    entries = []
     for r in rows:
         params = urlencode({
             "pltid":    r.plateid,
@@ -1591,8 +1591,16 @@ def _build_strain_urls(strain_id):
             "metadata": r.metadata_mods or "",
             "strain":   r.strain or "",
         })
-        urls.append(f"/mainstraindata?{params}")
-    return urls
+        entries.append({
+            "strain":   strain_id,
+            "plateid":  r.plateid,
+            "plate":    r.plate,
+            "specie":   r.specie,
+            "media":    r.media or "",
+            "metadata": r.metadata_mods or "",
+            "url":      f"/mainstraindata?{params}",
+        })
+    return entries
 
 @app.route("/interop-query/query-by-strain", methods=["POST"])
 @cross_origin()
@@ -1681,10 +1689,9 @@ def get_all_strains():
     try:
         strain_ids = db.session.query(KineticData.strainid).distinct().all()
 
-        strains = [
-            {"strain": strain_id, "urls": _build_strain_urls(strain_id)}
-            for (strain_id,) in strain_ids
-        ]
+        strains = []
+        for (strain_id,) in strain_ids:
+            strains.extend(_build_strain_entries(strain_id))
 
         return jsonify({"strains": strains}), 200
 
