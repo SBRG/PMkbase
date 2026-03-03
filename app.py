@@ -1659,17 +1659,9 @@ def query_by_strain():
                 "traitdata":    [_row_to_dict(r) for r in trait_rows],
             })
 
-        if unique_plate_ids:
-            growth_rows = (GrowthData.query
-                           .filter(GrowthData.plateid.in_(unique_plate_ids))
-                           .all())
-            plates_payload = [_growth_row_to_dict(g) for g in growth_rows]
-        else:
-            plates_payload = []
 
         return jsonify({
             "entries": entries,
-            "plates":   plates_payload
         }), 200
 
     except Exception as exc:
