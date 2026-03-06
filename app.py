@@ -18,6 +18,7 @@ import utils
 import uuid
 from datetime import timedelta
 import shutil
+from urllib.parse import urlencode
 import zipfile
 import io
 import logging
@@ -1558,21 +1559,53 @@ def _row_to_dict(row):
     """Generic SQLAlchemy → dict (all simple columns)."""
     return {c.name: getattr(row, c.name) for c in row.__table__.columns}
 
-def _growth_row_to_dict(row):
-    """GrowthData → dict, making signal_data JSON-safe."""
-    d = _row_to_dict(row)
-    if isinstance(d.get("signal_data"), list):
-        d["signal_data"] = [float(v) for v in d["signal_data"]]
-    return d
+
+def _build_strain_entries(strain_name):
+    """Return a flat list of dicts — one per (strain, plate) combo — with full params and url."""
+    rows = (db.session.query(
+                KineticData.plateid,
+                KineticData.strainid,
+                KineticData.specie,
+                KineticData.plate,
+                KineticData.media,
+                KineticData.metadata_mods,
+            )
+            .filter_by(strain=strain_name)
+            .distinct()
+            .all())
+
+    entries = []
+    for r in rows:
+        params = urlencode({
+            "pltid":    r.plateid,
+            "strn":     r.specie,
+            "plate":    r.plate,
+            "media":    r.media or "",
+            "strid":    r.strainid,
+            "metadata": r.metadata_mods or "",
+            "strain":   strain_name,
+        })
+        entries.append({
+            "strain":   strain_name,
+            "plateid":  r.plateid,
+            "plate":    r.plate,
+            "specie":   r.specie,
+            "media":    r.media or "",
+            "metadata": r.metadata_mods or "",
+            "url":      f"/mainstraindata?{params}",
+        })
+    return entries
 
 @app.route("/interop-query/query-by-strain", methods=["POST"])
 @cross_origin()
 def query_by_strain():
     """
-    POST body: {"ids": ["S1", "S2", ...]}
-    Returns, for each strain ID, all KineticData and TraitData rows
-    whose (strainid, plate) match that strain and any plate used
-    by that strain.  The plate list is gathered once from KineticData.
+    POST body: {"ids": ["strainA", "strainB", ...]}
+    Returns, for each strain name, all KineticData and TraitData rows
+    grouped by experiment (plateid). Each entry includes the
+    mainstraindata URL for that experiment.
+    If a strain has no data, a single entry with url=None and empty
+    lists is returned.
     """
     logger.info("query by strain")
 
@@ -1580,58 +1613,39 @@ def query_by_strain():
         payload = request.get_json()
         ids = _parse_ids(payload, "ids")
 
-        def _row_to_dict(row):
-            return {c.name: getattr(row, c.name) for c in row.__table__.columns}
-
         entries = []
 
-        unique_plate_ids = set()
-        for strain_id in ids:
-            plate_ids = {p for (p,) in (
-                db.session.query(KineticData.plateid)
-                          .filter_by(strainid=strain_id)
-                          .distinct()
-            )}
+        for strain_name in ids:
+            url_entries = _build_strain_entries(strain_name)
 
-            unique_plate_ids |= plate_ids
-
-            # If a strain never occurs, return empty lists instead of error.
-            if not plate_ids:
+            if not url_entries:
                 entries.append({
-                    "strainid": strain_id,
+                    "url":          None,
+                    "strain":       strain_name,
+                    "plateid":      None,
                     "kinethicdata": [],
-                    "traitdata":   []
+                    "traitdata":    [],
                 })
                 continue
 
-            kin_rows = (KineticData.query
-                        .filter_by(strainid=strain_id)
-                        .filter(KineticData.plateid.in_(plate_ids))
-                        .all())
+            for ue in url_entries:
+                kin_rows = (KineticData.query
+                            .filter_by(strain=strain_name, plateid=ue["plateid"])
+                            .all())
 
-            trait_rows = (TraitData.query
-                          .filter_by(strainid=strain_id)
-                          .filter(TraitData.plateid.in_(plate_ids))
-                          .all())
+                trait_rows = (TraitData.query
+                              .filter_by(strain=strain_name, plateid=ue["plateid"])
+                              .all())
 
-            entries.append({
-                "strainid": strain_id,
-                "kinethicdata": [_row_to_dict(r) for r in kin_rows],
-                "traitdata":    [_row_to_dict(r) for r in trait_rows],
-            })
+                entries.append({
+                    "strain":       ue["strain"],
+                    "plateid":      ue["plateid"],
+                    "url":          ue["url"],
+                    "kinethicdata": [_row_to_dict(r) for r in kin_rows],
+                    "traitdata":    [_row_to_dict(r) for r in trait_rows],
+                })
 
-        if unique_plate_ids:
-            growth_rows = (GrowthData.query
-                           .filter(GrowthData.plateid.in_(unique_plate_ids))
-                           .all())
-            plates_payload = [_growth_row_to_dict(g) for g in growth_rows]
-        else:
-            plates_payload = []
-
-        return jsonify({
-            "entries": entries,
-            "plates":   plates_payload
-        }), 200
+        return jsonify({"entries": entries}), 200
 
     except Exception as exc:
         logger.exception("Error in query_by_strain")
@@ -1648,9 +1662,11 @@ def get_all_strains():
     logger.info("get all strains")
     
     try:
-        strain_ids = db.session.query(KineticData.strainid).distinct().all()
-        
-        strains = [strain_id for (strain_id,) in strain_ids]
+        strain_names = db.session.query(KineticData.strain).distinct().all()
+
+        strains = []
+        for (strain_name,) in strain_names:
+            strains.extend(_build_strain_entries(strain_name))
 
         return jsonify({"strains": strains}), 200
 
