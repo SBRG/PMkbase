@@ -18,7 +18,7 @@ import utils
 import uuid
 from datetime import timedelta
 import shutil
-from urllib.parse import urlencode
+from urllib.parse import urlencode, quote
 import zipfile
 import io
 import logging
@@ -31,6 +31,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 app.secret_key = 'sbrg_omnilog'
+PMKBASE_BASE_URL = "https://pmkbase.com"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///growth_data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['MAX_CONTENT_LENGTH'] = 10000*1024*1024
@@ -1592,7 +1593,7 @@ def _build_strain_entries(strain_name):
             "specie":   r.specie,
             "media":    r.media or "",
             "metadata": r.metadata_mods or "",
-            "url":      f"/mainstraindata?{params}",
+            "url":      f"{PMKBASE_BASE_URL}/mainstraindata?{params}",
         })
     return entries
 
