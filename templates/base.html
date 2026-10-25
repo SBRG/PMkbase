@@ -8,7 +8,7 @@
 
     Sections:
         - Head: Loads global JS/CSS libraries (jQuery, Bootstrap, DataTables, Highcharts, D3).
-        - Style: Sidebar and layout styles.
+        - Style: Shared responsive rules from '_responsive.html'.
         - Body: Navigation bar and content block.
         - Script: Utility JS for navigation highlighting.
         - Jinja Blocks: 'head', 'body', and 'script' for child templates.
@@ -40,67 +40,21 @@
     <script src="https://d3js.org/d3.v6.min.js"></script>
 
     {% block head %}{% endblock %}
+
+    {% include '_responsive.html' %}
 </head>
-
-<style>
-    /* Sidebar styles */
-    .sidebar {
-        margin: 0;
-        padding: 0;
-        width: 200px;
-        background-color: rgb(142, 35, 35);
-        color: white;
-        position: fixed;
-        height: 100%;
-        overflow: auto;
-        font-family: Arial, Helvetica, sans-serif;
-    }
-
-    #organisms-header {
-        font-size: 25px;
-        font-style: normal;
-        font-family: arial;
-        pointer-events: none;
-        color: white;
-    }
-
-    .jumbotron {
-        margin-left: 200px;
-        font-family: Arial, Helvetica, sans-serif;
-    }
-
-    #date-image {
-        width: 600px;
-        margin-left: 200px;
-    }
-
-    /* Sidebar links */
-    .sidebar a {
-        display: block;
-        color: white;
-        padding: 16px;
-        text-decoration: none;
-    }
-    /* Active/current link */
-    .sidebar a.active {
-        background-color: black;
-        color: whitesmoke;
-    }
-    /* Links on mouse-over */
-    .sidebar a:hover:not(.active) {
-        background-color: black;
-        color: white;
-    }
-</style>
 
 <body>
     <!--
         Navigation Bar:
         - Dashboard, About, Plates links.
-        - Uses Bootstrap for styling.
+        - Uses Bootstrap for styling; collapses behind a toggler on small screens.
         - 'dodajAktywne' JS function highlights active link.
     -->
     <nav class="navbar navbar-expand-sm navbar-light" style="background-color: white;">
+        <button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
             <a class="nav-link" id="a-dashboard" href="{{ url_for('index') }}" onclick="dodajAktywne(this)">Dashboard<span class="sr-only">(current)</span></a>
             <a class="nav-link" href="{{ url_for('about') }}">About <span class="sr-only">(current)</span></a>

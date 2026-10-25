@@ -22,191 +22,170 @@
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
 
     <title>PMkbase1.0</title>
+
+    <style>
+        body {
+            --sidebar-width: 200px;
+        }
+
+        /* Sidebar colours (layout lives in '_responsive.html') */
+        .sidebar {
+            background-color: whitesmoke;
+            color: white;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        #organisms-header {
+            font-size: 25px;
+            font-style: normal;
+            font-family: arial;
+            pointer-events: none;
+            color: black;
+        }
+
+        .jumbotron {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        /* Sidebar links */
+        .sidebar a {
+            font-size: 20px;
+            display: block;
+            color: black;
+            padding: 16px;
+            text-decoration: none;
+        }
+
+        /* Active/current link */
+        .sidebar a.active {
+            background-color: whitesmoke;
+            color: black;
+        }
+
+        /* Quick links row under the header */
+        .home-links {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            column-gap: 35px;
+        }
+
+        .footer {
+            position: fixed;
+            left: var(--sidebar-width);
+            right: 0;
+            bottom: 0;
+            background-color: white;
+            color: black;
+            text-align: left;
+            font-family: Arial, Helvetica, sans-serif;
+            padding-left: 30px;
+        }
+
+        /* Dropdown styles */
+        .navbar-nav .nav-item .dropdown-menu {
+            display: none;
+            position: absolute;
+            background-color: white;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        .navbar-nav .nav-item:hover .dropdown-menu {
+            display: block;
+        }
+
+        .navbar-nav .nav-item .dropdown-menu a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .navbar-nav .nav-item .dropdown-menu a:hover {
+            background-color: #ddd;
+        }
+
+        /* Links on mouse-over */
+        .sidebar a:hover:not(.active) {
+            background-color: black;
+            color: white;
+        }
+
+        #container {
+            height: 400px;
+        }
+
+        .highcharts-figure,
+        .highcharts-data-table table {
+            min-width: 310px;
+            max-width: 800px;
+            margin: 1em auto;
+        }
+
+        .highcharts-data-table table {
+            font-family: Verdana, sans-serif;
+            border-collapse: collapse;
+            border: 1px solid #ebebeb;
+            margin: 10px auto;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .highcharts-data-table caption {
+            padding: 1em 0;
+            font-size: 1.2em;
+            color: #555;
+        }
+
+        .highcharts-data-table th {
+            font-weight: 600;
+            padding: 0.5em;
+        }
+
+        .highcharts-data-table td,
+        .highcharts-data-table th,
+        .highcharts-data-table caption {
+            padding: 0.5em;
+        }
+
+        .highcharts-data-table thead tr,
+        .highcharts-data-table tr:nth-child(even) {
+            background: #f8f8f8;
+        }
+
+        .highcharts-data-table tr:hover {
+            background: #f1f7ff;
+        }
+
+        /* Narrow screens: organisms become a wrapped row above the content */
+        @media screen and (max-width: 991.98px) {
+            .sidebar {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+            }
+            .sidebar a {
+                padding: 10px 14px;
+            }
+            .sidebar a ul {
+                margin: 0;
+                padding: 0;
+            }
+            .jumbotron {
+                padding: 1.5rem 1rem;
+            }
+            .footer {
+                position: static;
+                padding-left: 0;
+            }
+        }
+    </style>
+
+    {% include '_responsive.html' %}
 </head>
 
-<style>
-    /* Sidebar styles */
-    .sidebar {
-        margin: 0;
-        padding: 0;
-        width: 200px;
-        background-color: whitesmoke;
-        color: white;
-        position: fixed;
-        height: 100%;
-        overflow: auto;
-        font-family: Arial, Helvetica, sans-serif;
-    }
-
-    #organisms-header {
-        font-size: 25px;
-        font-style: normal;
-        font-family: arial;
-        pointer-events: none;
-        color: black;
-    }
-
-    .jumbotron {
-        margin-left: 200px;
-        font-family: Arial, Helvetica, sans-serif;
-    }
-
-    #date-image {
-        width: 600px;
-        margin-left: 200px;
-    }
-
-    /* Sidebar links */
-    .sidebar a {
-        font-size: 20px;
-        display: block;
-        color: black;
-        padding: 16px;
-        text-decoration: none;
-    }
-
-    /* Active/current link */
-    .sidebar a.active {
-        background-color: whitesmoke;
-        color: black;
-    }
-
-    /* Three image containers */
-    .column {
-        float: left;
-        width: 20%;
-        padding: 10px;
-        margin-left: 220px;
-    }
-
-    /* Clear floats after image containers */
-    .row::after {
-        content: "";
-        clear: both;
-        display: table;
-    }
-
-    .image-headers {
-        font-size: 20px;
-        font-family: Arial, Helvetica, sans-serif;
-        margin-left: 110px;
-    }
-
-    .footer {
-        position: fixed;
-        left: 0;
-        bottom: 0;
-        width: 100%;
-        background-color: white;
-        color: black;
-        text-align: left;
-        font-family: Arial, Helvetica, sans-serif;
-        padding-left: 30px;
-        margin-left: 200px;
-    }
-
-    /* Dropdown styles */
-    .navbar-nav .nav-item .dropdown-menu {
-        display: none;
-        position: absolute;
-        background-color: white;
-        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-        z-index: 1;
-    }
-
-    .navbar-nav .nav-item:hover .dropdown-menu {
-        display: block;
-    }
-
-    .navbar-nav .nav-item .dropdown-menu a {
-        color: black;
-        padding: 12px 16px;
-        text-decoration: none;
-        display: block;
-    }
-
-    .navbar-nav .nav-item .dropdown-menu a:hover {
-        background-color: #ddd;
-    }
-
-    /* Links on mouse-over */
-    .sidebar a:hover:not(.active) {
-        background-color: black;
-        color: white;
-    }
-
-    #container {
-        margin-left: -10%;
-        height: 400px;
-    }
-
-    #container2 {
-        float: left;
-        height: 200px;
-        margin-left: 200px;
-    }
-
-    .highcharts-figure,
-    .highcharts-data-table table {
-        min-width: 310px;
-        max-width: 800px;
-        margin: 1em auto;
-    }
-
-    .highcharts-data-table table {
-        font-family: Verdana, sans-serif;
-        border-collapse: collapse;
-        border: 1px solid #ebebeb;
-        margin: 10px auto;
-        text-align: center;
-        width: 100%;
-        max-width: 500px;
-    }
-
-    .highcharts-data-table caption {
-        padding: 1em 0;
-        font-size: 1.2em;
-        color: #555;
-    }
-
-    .highcharts-data-table th {
-        font-weight: 600;
-        padding: 0.5em;
-    }
-
-    .highcharts-data-table td,
-    .highcharts-data-table th,
-    .highcharts-data-table caption {
-        padding: 0.5em;
-    }
-
-    .highcharts-data-table thead tr,
-    .highcharts-data-table tr:nth-child(even) {
-        background: #f8f8f8;
-    }
-
-    .highcharts-data-table tr:hover {
-        background: #f1f7ff;
-    }
-
-    /* Responsive sidebar */
-    @media screen and (max-width: 700px) {
-        .sidebar {
-            width: 100%;
-            height: auto;
-            position: relative;
-        }
-        .sidebar a { float: left; }
-        div.content { margin-left: 0; }
-    }
-
-    @media screen and (max-width: 400px) {
-        .sidebar a {
-            text-align: center;
-            float: none;
-        }
-    }
-</style>
 
 <body>
     <!--
@@ -224,14 +203,14 @@
         Main Content:
         - Header, summary, navigation links, chart, and footer.
     -->
-    <div class="jumbotron" style="background-color: white;">
+    <div class="jumbotron main-offset" style="background-color: white;">
         <h1 class="display-4" style="background-color: white;">Phenotype Microarray Knowledgebase (PMkbase) 1.0</h1>
         <p class="lead">A database for tracking bacterial traits, phenotypes with sequences empowered by phenotype microarrays.</p>
         <hr class="my-4">
-        <div style="display: flex; align-items: center; justify-content: space-between; width: 300px;">
-            <a class="lead" href="{{url_for('about')}}" style="float:left">About</a>
-            <a class="lead" href="{{url_for('plates')}}" style="float:left;margin-left: 35px">Plates</a>
-            <a class="lead" href="{{url_for('upload')}}" style="float:left;margin-left: 35px">Upload/Visualize</a>
+        <div class="home-links">
+            <a class="lead" href="{{url_for('about')}}">About</a>
+            <a class="lead" href="{{url_for('plates')}}">Plates</a>
+            <a class="lead" href="{{url_for('upload')}}">Upload/Visualize</a>
             <div class="navbar">
                 <ul class="navbar-nav">
                     <li class="nav-item active"></li>

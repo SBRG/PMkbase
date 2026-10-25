@@ -1,0 +1,192 @@
+<!--
+    _responsive.html
+
+    Description:
+        Shared responsive layout rules for every PMkbase page.
+        Included at the end of each page's <head> so these rules take precedence
+        over the page-level styles that come before them.
+
+    Breakpoints (Bootstrap 4):
+        - < 992px : fixed sidebars become a regular block above the content.
+        - < 576px : navigation collapses behind the toggler, tighter spacing.
+-->
+<style>
+    :root {
+        --sidebar-width: 230px;
+        /* Always render in light mode, regardless of the OS/browser theme
+           (also opts out of Chrome's automatic dark mode) */
+        color-scheme: only light;
+    }
+
+    body {
+        background-color: #ffffff;
+        color: #212529;
+    }
+
+    /* Highcharts (v12+) sets `color-scheme: light dark` on its charts, which
+       turns them dark on machines using a dark OS theme. Pin them to light. */
+    .highcharts-container {
+        color-scheme: light !important;
+    }
+
+    .highcharts-background {
+        fill: #ffffff;
+    }
+
+    *, *::before, *::after {
+        box-sizing: border-box;
+    }
+
+    img, video, canvas {
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* D3 graphics drawn with a viewBox scale down with their container */
+    svg.responsive-svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        margin: 0 auto;
+    }
+
+    /* Generic centred content wrapper for pages without a sidebar */
+    .page-wrap {
+        width: 100%;
+        max-width: 1400px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 2%;
+        padding-right: 2%;
+    }
+
+    /* Fixed left sidebar + offset content */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: var(--sidebar-width);
+        height: 100%;
+        overflow-y: auto;
+        z-index: 1020;
+    }
+
+    .main-offset {
+        margin-left: var(--sidebar-width);
+    }
+
+    /* Sidebar key/value metadata (species, strain and upload pages) */
+    .sidebar-meta {
+        margin: 0;
+        padding: 30px 0 20px 40px;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 20px;
+    }
+
+    .sidebar-meta dt {
+        font-weight: bold;
+        padding-top: 10px;
+    }
+
+    .sidebar-meta dd {
+        margin: 0;
+        padding-top: 10px;
+        word-break: break-word;
+    }
+
+    /* Wide tables scroll horizontally instead of stretching the page */
+    .dataTables_wrapper,
+    .table-scroll {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .highcharts-figure {
+        max-width: 100%;
+    }
+
+    .chart {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    /* Navbar: hover-to-open dropdowns only where a pointer can hover */
+    @media (hover: hover) {
+        .navbar-nav .nav-item.dropdown:hover > .dropdown-menu {
+            display: block;
+        }
+    }
+
+    /* Colour legend used above heatmaps */
+    .growth-legend {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px 40px;
+        margin: 30px auto 10px;
+    }
+
+    .growth-legend-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .growth-legend-swatch {
+        width: 50px;
+        height: 50px;
+        border: 2px solid #000;
+    }
+
+    @media (max-width: 991.98px) {
+        .sidebar {
+            position: static;
+            width: 100%;
+            height: auto;
+            overflow: visible;
+        }
+
+        .main-offset {
+            margin-left: 0;
+        }
+
+        /* Lay the metadata out as a compact two-column grid */
+        .sidebar-meta {
+            display: grid;
+            grid-template-columns: max-content 1fr;
+            column-gap: 16px;
+            padding: 12px 16px;
+            font-size: 16px;
+        }
+
+        .sidebar-meta dt,
+        .sidebar-meta dd {
+            padding-top: 4px;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .display-4 {
+            font-size: 2rem;
+        }
+
+        .lead {
+            font-size: 1.05rem;
+        }
+
+        .highcharts-figure,
+        .highcharts-data-table table {
+            min-width: 0 !important;
+        }
+
+        .growth-legend {
+            gap: 10px 20px;
+        }
+
+        .growth-legend-swatch {
+            width: 36px;
+            height: 36px;
+        }
+    }
+</style>

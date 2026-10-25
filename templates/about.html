@@ -27,6 +27,11 @@
         .text {
             font-size: 14px;
             margin-left: 2%;
+            margin-right: 2%;
+        }
+
+        .section-heading {
+            margin: 20px 2% 0;
         }
 
         .highcharts-figure,
@@ -104,7 +109,7 @@
             - Media formulation recipes
     -->
 
-    <h3 style="margin-left: 2%; margin-top: 20px; margin-right: 500px; font-size: 22px;">About</h3>
+    <h3 class="section-heading" style="font-size: 22px;">About</h3>
 
     <p class="text">
         PMkbase is a web based bacterial phenotypic database based on the
@@ -123,27 +128,27 @@
         PMkbase is free for non-commerical use and is hosted and maintained at the Systems Biology Research Group at the University of California San Diego.
     </p>
 
-    <h5 style="margin-left: 2%; margin-top: 20px; margin-right: 500px;">Data Submission</h5>
+    <h5 class="section-heading">Data Submission</h5>
     <p class="text">
         To submit any data you have, contact <a href="mailto:kkrishnan@ucsd.edu">kkrishnan@ucsd.edu</a>
     </p>
 
     <!--
-    <h5 style="margin-left: 2%; margin-top: 20px; margin-right: 500px;">Citing</h5>
+    <h5 class="section-heading">Citing</h5>
     <p class="text">
         If you use OmnilogDB for your research, we request to cite our latest publication on it.
         This will help us to keep funds running to maintain and improve the database.
     </p>
     -->
 
-    <h5 style="margin-left: 2%; margin-top: 20px; margin-right: 500px;">Curation and Quality Check</h5>
+    <h5 class="section-heading">Curation and Quality Check</h5>
     <p class="text">
         High quality data should include samples with well annotated strain names/IDs, the species they belong to,
         any genomic modifications done to it and the media conditions used (usually minimal media for metabolic plates).
         At least 2 replicates for a strain and plate combination are required to make a conclusive growth call.
     </p>
 
-    <h5 style="margin-left: 2%; margin-top: 20px; margin-right: 500px;">How do we make the Growth Calls?</h5>
+    <h5 class="section-heading">How do we make the Growth Calls?</h5>
     <p class="text">
         We use our in-house pipeline available
         <a href="https://github.com/Kahuna-flipper/PM_growth_calls">here</a>, to make growth/no growth calls.
@@ -158,7 +163,7 @@
         A substrate/inhibitor is assigned as a trait to a strain if majority replicates display growth.
     </p>
 
-    <h5 style="margin-left: 2%; margin-top: 20px; margin-right: 500px;">Media formulations</h5>
+    <h5 class="section-heading">Media formulations</h5>
     <p class="text">
         <u>M9 Minimal media (without glucose) [For 2L solution]:</u><br>
         Milli-Q water - 1.6L<br>

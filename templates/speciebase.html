@@ -8,8 +8,8 @@
 
     Sections:
         - Head: Loads JS/CSS libraries (jQuery, DataTables, Bootstrap, Highcharts).
-        - Style: Sidebar and navigation styles.
-        - Body: Sidebar with species metadata, navigation bar, and download dropdown.
+        - Style: Sidebar colours and dropdown styles; layout rules from '_responsive.html'.
+        - Body: Navigation bar with download dropdown, species metadata sidebar, main content.
         - Script: Custom JS for debugging and navigation highlighting.
         - Jinja Blocks: 'head', 'body', and 'script' for child templates.
 -->
@@ -38,81 +38,38 @@
     <script src="https://code.highcharts.com/highcharts.js"></script>
     
     {% block head %}{% endblock %}
+
+    <style>
+        /* Sidebar colours (layout lives in '_responsive.html') */
+        .sidebar {
+            background-color: whitesmoke;
+            color: black;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        /* Dropdown styles */
+        .navbar-nav .nav-item .dropdown-menu {
+            background-color: white;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1030;
+        }
+
+        .navbar-nav .nav-item .dropdown-menu a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            white-space: normal;
+        }
+
+        .navbar-nav .nav-item .dropdown-menu a:hover {
+            background-color: #ddd;
+        }
+    </style>
+
+    {% include '_responsive.html' %}
 </head>
 
-<style>
-    /* Sidebar styles */
-    .sidebar {
-        margin: 0;
-        padding: 0;
-        width: 230px;
-        background-color: whitesmoke;
-        color: black;
-        height: 100%;
-        position: fixed;
-        overflow: auto;
-        font-family: Arial, Helvetica, sans-serif;
-    }
-
-    #strainmetadata {
-        font-size: 20px;
-        font-style: normal;
-        font-family: Arial, Helvetica, sans-serif;
-        pointer-events: none;
-        font-weight: bold;
-    }
-
-    #strainmetadatafillers {
-        font-size: 20px;
-        font-style: normal;
-        font-family: Arial, Helvetica, sans-serif;
-        pointer-events: none;
-    }
-
-    /* Sidebar links */
-    .sidebar a {
-        display: block;
-        color: black;
-        padding-top: 10px;
-        text-decoration: none;
-    }
-
-    /* Active/current link */
-    .sidebar a.active {
-        background-color: black;
-        color: whitesmoke;
-    }
-
-    /* Links on mouse-over */
-    .sidebar a:hover:not(.active) {
-        background-color: black;
-        color: white;
-    }
-
-    /* Dropdown styles */
-    .navbar-nav .nav-item .dropdown-menu {
-        display: none;
-        position: left;
-        background-color: white;
-        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-        z-index: 1;
-    }
-
-    .navbar-nav .nav-item:hover .dropdown-menu {
-        display: block;
-    }
-
-    .navbar-nav .nav-item .dropdown-menu a {
-        color: black;
-        padding: 12px 16px;
-        text-decoration: none;
-        display: block;
-    }
-
-    .navbar-nav .nav-item .dropdown-menu a:hover {
-        background-color: #ddd;
-    }
-</style>
 
 <script>
     // Debug: Print selected species to console
@@ -121,40 +78,22 @@
 
 <body>
     <!--
-        Sidebar:
-        - Displays species metadata: name, samples, strains, plates, genome clusters.
-    -->
-    <div class="sidebar">
-        <a id="strainmetadata"><ul></ul></a>
-        <a id="strainmetadata"><ul></ul></a>
-        <a id="strainmetadata"><ul>Specie:</ul></a>
-        <a id="strainmetadatafillers"><ul>{{ specie_name }}</ul></a>
-        <a id="strainmetadata"><ul>Samples:</ul></a>
-        <a id="strainmetadatafillers"><ul>{{ samples }}</ul></a>
-        <a id="strainmetadata"><ul>Strains:</ul></a>
-        <a id="strainmetadatafillers"><ul>{{ strains }}</ul></a>
-        <a id="strainmetadata"><ul>Available Plates:</ul></a>
-        <a id="strainmetadatafillers"><ul>{{ available_plates }}</ul></a>
-        <a id="strainmetadata"><ul>Genome Clusters:</ul></a>
-        <a id="strainmetadatafillers"><ul>{{ clusters }}</ul></a>
-    </div>    
-
-    <!--
         Navigation Bar:
         - Dashboard, About, Plates, Viz Traits on MashTree, Download dropdown.
-        - Uses Bootstrap for styling.
+        - Uses Bootstrap for styling; collapses behind a toggler on small screens.
     -->
-    <nav class="navbar navbar-expand-sm navbar-light" style="background-color: white; margin-left: 230px;">
+    <nav class="navbar navbar-expand-sm navbar-light main-offset" style="background-color: white;">
+        <button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
             <a class="nav-link" id="a-dashboard" href="{{ url_for('index') }}" onclick="dodajAktywne(this)">Dashboard<span class="sr-only">(current)</span></a>
             <a class="nav-link" href="{{ url_for('about') }}">About <span class="sr-only">(current)</span></a>
             <a class="nav-link" href="{{ url_for('plates') }}">Plates <span class="sr-only">(current)</span></a>
             <a class="nav-link" href="{{ url_for('tree', specie=specie) }}">Viz Traits on MashTree<span class="sr-only">(current)</span></a>
             <ul class="navbar-nav">
-                <li class="nav-item active"></li>
-                <li class="nav-item"></li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" style="color:#007bff;" id="navbarDropdown" role="button">Download</a>
+                    <a class="nav-link dropdown-toggle" href="#" style="color:#007bff;" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Download</a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="{{ url_for('download_all_specie_sequences', specie=specie) }}">All {{ specie[0].upper() + '. ' + specie[1:] + ' ' }}Sequences</a>
                         <a class="dropdown-item" href="{{ url_for('download_all_specie_pmdata', specie=specie) }}">All {{ specie[0].upper() + '. ' + specie[1:] + ' ' }}Phenotype Microarray data</a>
@@ -164,7 +103,29 @@
         </div>
     </nav>
 
-    {% block body %}{% endblock %}
+    <!--
+        Sidebar:
+        - Displays species metadata: name, samples, strains, plates, genome clusters.
+        - Fixed on the left on wide screens; stacks below the navbar on narrow ones.
+    -->
+    <aside class="sidebar">
+        <dl class="sidebar-meta">
+            <dt>Specie:</dt>
+            <dd>{{ specie_name }}</dd>
+            <dt>Samples:</dt>
+            <dd>{{ samples }}</dd>
+            <dt>Strains:</dt>
+            <dd>{{ strains }}</dd>
+            <dt>Available Plates:</dt>
+            <dd>{{ available_plates }}</dd>
+            <dt>Genome Clusters:</dt>
+            <dd>{{ clusters }}</dd>
+        </dl>
+    </aside>
+
+    <main class="main-offset">
+        {% block body %}{% endblock %}
+    </main>
 </body>
 
 {% block script %}{% endblock %}

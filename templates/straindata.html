@@ -25,23 +25,31 @@
     }
 
 
+/* Heatmap and respiration curve side by side, stacking on narrow screens */
+#wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
 #container {
-    height: 200px;
-    margin-left: 210px;
-    float:left;
+    flex: 4 1 500px;
+    min-width: 0;
+    max-width: 800px;
 }
 
 #container2 {
-    height: 200px;
-    margin-left: 1100px;
-    float:left;
-    margin-top: -500px;
+    flex: 3 1 400px;
+    min-width: 0;
+    max-width: 600px;
 }
 
-#wrapper {
-    /* width: 1500px; */
-    /* border: 1px solid black; */
-    overflow: hidden; /* will contain if #first is longer than #second */
+.section-title {
+    text-align: center;
+    text-decoration: underline;
+    font-family: monospace;
+    padding: 0 2%;
 }
 
 .highcharts-figure,
@@ -95,23 +103,22 @@
 
 {% block body %}
 
-<h3 style="margin-left: 300px;margin-top: 50px;text-decoration: underline;margin-right: 795px;font-family: monospace;">Click on a cell to plot respiration curves</h3>
+<h3 class="section-title" style="margin-top: 50px;">Click on a cell to plot respiration curves</h3>
 
-<div style="width:50px;margin-left: 450px;margin-top:10px;height:50px;float: left;background: #cb9be8;border:2px solid #000;"></div>
-<div style="width:50px;margin-left: 100px;;margin-top:10px;height:50px;float: left;background: #FFFFFF;border:2px solid #000;"></div>
-<div style="width:50px;margin-left: 100px;;margin-top:10px;height:50px;float: left;background: #cc819d;border:2px solid #000;"></div>
-<div style="margin-top:120px;margin-left: 450px;height:10px;position: sticky;">Growth</div>
-<div style="margin-left:590px;height:10px;position: sticky;margin-top: -10px;">No Growth</div>
-<div style="margin-left: 740px;height:10px;margin-top: -10px">Uncertain</div>
+<div class="growth-legend" style="margin-top: 10px;">
+    <div class="growth-legend-item"><div class="growth-legend-swatch" style="background: #cb9be8;"></div>Growth</div>
+    <div class="growth-legend-item"><div class="growth-legend-swatch" style="background: #FFFFFF;"></div>No Growth</div>
+    <div class="growth-legend-item"><div class="growth-legend-swatch" style="background: #cc819d;"></div>Uncertain</div>
+</div>
 
-<div id = "wrapper">
-<div id="container" class="chart" style="height: 500px; width: 800px;margin-top: 10px;float: left"></div>
-<div id="container2" class="chart" style="height: 500px; width: 600px;float: left;"></div>
+<div id = "wrapper" class="page-wrap">
+<div id="container" class="chart" style="height: 500px; margin-top: 10px;"></div>
+<div id="container2" class="chart" style="height: 500px;"></div>
 </div>
 <br>
 <br>
-<h3 style="margin-left: 810px;text-decoration: underline;margin-right: 705px;font-family: monospace;">Kinetic Parameters</h3>
-<div class = "dprojectforstrain" style="margin-left: 210px;width:1600px;margin-top:30pxpx;">
+<h3 class="section-title">Kinetic Parameters</h3>
+<div class = "dprojectforstrain page-wrap" style="margin-top:30px;">
     <table id="table_id" class ="table table-hover">
         <thead class="thead-light">        
             <tr>

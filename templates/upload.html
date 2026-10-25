@@ -24,12 +24,7 @@
     <style>
 
     .dtableforexample{
-        margin-left:15%;
-        margin-right: 20%;
-        height:50px;
-        margin-top: 20px;
-        width: 75%;
-
+        margin: 20px 2% 0;
     }
 
             /* Spinner styles */
@@ -156,10 +151,15 @@
         }
 
     </style>
+
+    {% include '_responsive.html' %}
 </head>
 <body>
 
     <nav class="navbar navbar-expand-sm navbar-light" style="background-color: white;">
+        <button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
           <a class="nav-link" id="a-dashboard" href="{{url_for('index')}}" onclick="dodajAktywne(this)">Dashboard<span class="sr-only">(current)</span></a>
           <a class="nav-link" href="{{url_for('about')}}">About <span class="sr-only">(current)</span></a>
