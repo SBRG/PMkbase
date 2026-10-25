@@ -52,37 +52,37 @@
             pointer-events: none;
         }
 
+        /* Legend, tree and distance chart side by side; they wrap onto
+           new rows as the screen narrows */
+        .tree-layout {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            padding: 0 1.5%;
+        }
+
         #legend-container {
-            display: inline-block;
-            vertical-align: top;
+            flex: 0 0 200px;
             margin-top: 5%;
-            margin-right: -2%;
-            margin-left:2%;
         }
 
         #tree-container {
-            display: inline-block;
-            width: 500px;
-            margin-left: -5%;
-            vertical-align: top;
+            flex: 1 1 500px;
+            min-width: 0;
+            max-width: 1000px;
         }
 
-
         .highcharts-figure {
-            display: inline-block;
-            width: 30%;
-            vertical-align: top;
-            margin-left: 65%;
-            margin-top: -30%; /* Adjusted for better alignment */
-        }           
+            flex: 1 1 320px;
+            min-width: 0;
+            margin: 1em 0;
+        }
 
-
-        .highcharts-figure {
-            display: inline-block;
-            width: 30%;
-            vertical-align: top;
-            margin-left: 65%;
-            margin-top:-40%
+        @media (max-width: 767.98px) {
+            #legend-container {
+                flex-basis: 100%;
+                margin-top: 0;
+            }
         }
 
         #container {
@@ -126,8 +126,8 @@
         }
 
         #container_kinetics {
-            margin-left: 10%; /* Change to percentage for responsiveness */
-            width: 80%; /* Adjusted for better alignment */
+            margin-left: 2%;
+            margin-right: 2%;
             margin-top: 20px; /* Adjusted for better alignment */
             margin-bottom: 20px; /* Adjusted for better alignment */
         }
@@ -160,10 +160,15 @@
 
 
     </style>
+
+    {% include '_responsive.html' %}
 </head>
 <body>
 
     <nav class="navbar navbar-expand-sm navbar-light" style="background-color: white;">
+        <button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
           <a class="nav-link" id="a-dashboard" href="{{url_for('index')}}" onclick="dodajAktywne(this)">Dashboard<span class="sr-only">(current)</span></a>
           <a class="nav-link" href="{{url_for('about')}}">About <span class="sr-only">(current)</span></a>
@@ -191,7 +196,8 @@
     <h6 id="species-header" style="margin-left:1.5%"></h1>
 
    
-    <div id="legend-container" style="width: 200px;"></div>
+    <div class="tree-layout">
+    <div id="legend-container"></div>
     <div id="tree-container"></div>
     <!-- <p style="margin-left: 34%;font-style: italic;font-weight: 300;">Mash based tree of all strains with Biolog Data. Legend indicates genomic cluster/phylogroup</p> -->
 
@@ -204,10 +210,11 @@
             the phenotype is not shared ONLY between closely related strains and can exist in genomically different strains.
         </p>
     </figure>
+    </div>
 
 
 
-    <div class="dropdown" style="margin-left: 15%;">
+    <div class="dropdown" style="margin-left: 2%;">
         <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="background-color: #fffcfc;color: black;">
         Max Resp
         </button>
@@ -571,10 +578,12 @@
         const root = d3.hierarchy(treeData);
         tree(root);
 
+        // viewBox lets the tree scale down to fit narrow screens
         const svg = d3.select("#tree-container")
             .append("svg")
-            .attr("width", width)
-            .attr("height", height)
+            .attr("class", "responsive-svg")
+            .attr("viewBox", `0 0 ${width} ${height}`)
+            .style("max-width", `${width}px`)
             .append("g")
             .attr("transform", `translate(${width / 2},${height / 2})`);
 

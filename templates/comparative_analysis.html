@@ -103,18 +103,18 @@
     -->
 
     <!-- Color legend for growth calls -->
-    <div style="width:50px; margin-left: 690px; margin-top:30px; height:50px; float: left; background: #f2b6ee; border:2px solid #000;"></div>
-    <div style="width:50px; margin-left: 100px; margin-top:30px; height:50px; float: left; background: #FFFFFF; border:2px solid #000;"></div>
-    <div style="width:50px; margin-left: 100px; margin-top:30px; height:50px; float: left; background: #b6daf2; border:2px solid #000;"></div>
-    <div style="width:50px; margin-left: 100px; margin-top:30px; height:50px; float: left; background: #c4f2b6; border:2px solid #000;"></div>
-    <div style="margin-top:120px; margin-left: 690px; height:10px; position: sticky;">Growth</div>
-    <div style="margin-left:830px; height:10px; position: sticky; margin-top: -10px;">No Growth</div>
-    <div style="margin-left: 980px; height:10px; margin-top: -10px">Uncertain</div>
-    <div style="margin-left: 1150px; height:10px; margin-top: -10px">N.A</div>
+    <div class="growth-legend">
+        <div class="growth-legend-item"><div class="growth-legend-swatch" style="background: #f2b6ee;"></div>Growth</div>
+        <div class="growth-legend-item"><div class="growth-legend-swatch" style="background: #FFFFFF;"></div>No Growth</div>
+        <div class="growth-legend-item"><div class="growth-legend-swatch" style="background: #b6daf2;"></div>Uncertain</div>
+        <div class="growth-legend-item"><div class="growth-legend-swatch" style="background: #c4f2b6;"></div>N.A</div>
+    </div>
 
     <!-- Chart containers -->
-    <div id="chartContainer" class="chart" style="height: 200px; width: 1200px; margin-top: 60px; margin-left: 300px;"></div>
-    <div id="chartContainer2" class="chart" style="height: 500px; width: 1200px; margin-top: 60px; margin-left: 330px;"></div>
+    <div class="page-wrap">
+        <div id="chartContainer" class="chart" style="height: 200px; max-width: 1200px; margin: 60px auto 0;"></div>
+        <div id="chartContainer2" class="chart" style="height: 500px; max-width: 1200px; margin: 60px auto 0;"></div>
+    </div>
 
     <!-- Inject chart data from Flask context -->
     <script>

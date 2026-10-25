@@ -51,10 +51,11 @@
     <style>
         /* Table and chart layout styles */
         .dtableforuploads {
-            margin-left: 15%;
-            margin-right: 20%;
-            margin-top: 20px;
-            width: 75%;
+            margin: 20px 2% 0;
+        }
+
+        .page-text {
+            margin: 2.5% 2% 0;
         }
         .loading {
             text-align: center;
@@ -73,19 +74,17 @@
         }
         .chart-container {
             display: flex;
+            flex-wrap: wrap;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
+            gap: 40px;
             margin-top: 20px;
+            padding: 0 2%;
         }
-        #scatter-figure {
-            margin-right: 20px;
-            width: 40%;
-            height: 40%;
-        }
+        #scatter-figure,
         #heatmap-figure {
-            margin-left: 20px;
-            width: 40%;
-            height: 40%;
+            flex: 1 1 400px;
+            margin: 0;
         }
         .highcharts-tooltip h3 {
             margin: 0.3em 0;
@@ -124,6 +123,8 @@
             display: none !important;
         }
     </style>
+
+    {% include '_responsive.html' %}
 </head>
 
 <body>
@@ -133,6 +134,9 @@
         - Uses Bootstrap for styling.
     -->
     <nav class="navbar navbar-expand-sm navbar-light" style="background-color: white;">
+        <button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
             <a class="nav-link" id="a-dashboard" href="{{url_for('index')}}" onclick="dodajAktywne(this)">Dashboard<span class="sr-only">(current)</span></a>
             <a class="nav-link" href="{{url_for('about')}}">About <span class="sr-only">(current)</span></a>
@@ -152,7 +156,7 @@
         - Table shows all processed samples and metadata.
         - Rows in red indicate high control well signal.
     -->
-    <p style="margin-left: 15%;margin-right: 15%;margin-top: 2.5%;">
+    <p class="page-text">
         All processed samples. Click on a row to view sample data and statistics. Incorrect row metadata implies improper dataset curation.
         Rows in red are samples which have a high control well signal detected as active by the processing workflow.
     </p>
@@ -176,7 +180,7 @@
         Dropdown for plate selection.
         - Updates PCA and heatmap charts based on selected plate.
     -->
-    <div class="dropdown2" style="margin-left: 15%; margin-top: 20px;">
+    <div class="dropdown2" style="margin-left: 2%; margin-top: 20px;">
         <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownCompoundsButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="background-color: #fffcfc;color: black;">
             Plate
         </button>

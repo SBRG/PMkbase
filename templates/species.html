@@ -11,20 +11,25 @@
 
 <style>
     .dtableforstrain{
-        margin-left:18%;
-        /* height:50px; */
-        margin-top: 20px;
+        margin: 20px 2% 0;
         overflow-x: auto;
         overflow-y: auto;
-        width: 75%;
-
     }
     .dtprojectforstrain{
-        margin-left:18%;
-        margin-right: 20%;
-        height:50px;
-        width: 75%;
-        margin-top: 5%;
+        margin: 5% 2% 0;
+    }
+
+    #tree-container,
+    #legend-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .tree-caption {
+        text-align: center;
+        font-style: italic;
+        font-weight: 300;
+        padding: 0 2%;
     }
 
     #project_id.dataTable tbody tr:hover {
@@ -152,9 +157,9 @@ display: none !important;
 <br> -->
 <!-- <div id="tree-container" style="margin-left: 38%"></div> -->
 
-<div id="tree-container" style="margin-left: 36%"></div>
-<div id="legend-container" style="margin-left: 26%;"></div>
-<p style="margin-left: 36%;font-style: italic;font-weight: 300;">Mash based tree of all strains with PM Data. Legend indicates genomic cluster/phylogroup</p>
+<div id="tree-container"></div>
+<div id="legend-container"></div>
+<p class="tree-caption">Mash based tree of all strains with PM Data. Legend indicates genomic cluster/phylogroup</p>
 
 
 <div class = "dtableforstrain">
@@ -364,10 +369,12 @@ display: none !important;
         const root = d3.hierarchy(treeData);
         tree(root);
 
+        // viewBox lets the tree scale down to fit narrow screens
         const svg = d3.select("#tree-container")
             .append("svg")
-            .attr("width", width)
-            .attr("height", height)
+            .attr("class", "responsive-svg")
+            .attr("viewBox", `0 0 ${width} ${height}`)
+            .style("max-width", `${width}px`)
             .append("g")
             .attr("transform", `translate(${width / 2},${height / 2})`);
 
@@ -460,8 +467,12 @@ display: none !important;
         // Extract unique clusters and create a legend
         const clusters = Array.from(new Set(root.descendants().map(d => d.data.cluster).filter(c => c)));
 
-        const legendWidth = 1000; // Set the legend width to match the tree container width
-        const legendHeight = 50;
+        // Wrap legend items onto extra rows when the container is too narrow for one row
+        const legendWidth = Math.max(document.getElementById("legend-container").clientWidth, 200);
+        const legendItemWidth = 80; // Width of each legend item
+        const legendRowHeight = 30;
+        const itemsPerRow = Math.max(1, Math.floor((legendWidth - 40) / legendItemWidth));
+        const legendHeight = 20 + Math.ceil(clusters.length / itemsPerRow) * legendRowHeight;
 
         const legendSvg = d3.select("#legend-container")
             .append("svg")
@@ -470,13 +481,12 @@ display: none !important;
             .append("g")
             .attr("transform", `translate(20, 15)`); // Adjust position below the tree
 
-            const legendItemWidth = 80; // Width of each legend item
-            const totalLegendWidth = clusters.length * legendItemWidth; // Total width of the legend
-            const startX = (legendWidth - totalLegendWidth) / 2; // Starting X position to center the legend
+            const totalLegendWidth = Math.min(clusters.length, itemsPerRow) * legendItemWidth; // Width of the widest row
+            const startX = (legendWidth - 40 - totalLegendWidth) / 2; // Starting X position to center the legend
 
         clusters.forEach((cluster, i) => {
             const legendItem = legendSvg.append("g")
-                .attr("transform", `translate(${startX + i * legendItemWidth}, 15)`); // Increase the horizontal distance between legend items
+                .attr("transform", `translate(${startX + (i % itemsPerRow) * legendItemWidth}, ${15 + Math.floor(i / itemsPerRow) * legendRowHeight})`);
 
             legendItem.append("circle")
                 .attr("cx", 0)
