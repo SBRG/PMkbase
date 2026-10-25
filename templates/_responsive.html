@@ -13,6 +13,24 @@
 <style>
     :root {
         --sidebar-width: 230px;
+        /* Always render in light mode, regardless of the OS/browser theme
+           (also opts out of Chrome's automatic dark mode) */
+        color-scheme: only light;
+    }
+
+    body {
+        background-color: #ffffff;
+        color: #212529;
+    }
+
+    /* Highcharts (v12+) sets `color-scheme: light dark` on its charts, which
+       turns them dark on machines using a dark OS theme. Pin them to light. */
+    .highcharts-container {
+        color-scheme: light !important;
+    }
+
+    .highcharts-background {
+        fill: #ffffff;
     }
 
     *, *::before, *::after {
